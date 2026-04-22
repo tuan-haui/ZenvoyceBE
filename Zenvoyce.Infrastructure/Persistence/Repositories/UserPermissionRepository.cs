@@ -4,7 +4,7 @@ using ZenvoyceDbContext = Zenvoyce.Infrastructure.Entities.ZenvoyceDbContext;
 
 namespace Zenvoyce.Infrastructure.Persistence.Repositories;
 
-public class UserPermissionRepository(ZenvoyceDbContext dbContext) : IUserPermissionRepository
+public class UserPermissionRepository(ZenvoyceDbContext dbContext) : IUserPermissionRepository, IPermissionRepository
 {
     public async Task<IReadOnlyCollection<Guid>> GetRoleIdsByUserIdAsync(Guid userId, CancellationToken cancellationToken)
     {
@@ -16,5 +16,35 @@ public class UserPermissionRepository(ZenvoyceDbContext dbContext) : IUserPermis
             .ToListAsync(cancellationToken);
 
         return roleIds;
+    }
+
+    public async Task AssignMenusAsync(
+        Guid roleId,
+        Guid userId,
+        IReadOnlyCollection<Guid> menuIds,
+        CancellationToken cancellationToken)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+        var existingPermissions = await dbContext.Phanquyenchucnangs
+            .Where(x => x.Nguoidungid == userId && x.Quyenid == roleId)
+            .ToListAsync(cancellationToken);
+
+        dbContext.Phanquyenchucnangs.RemoveRange(existingPermissions);
+
+        if (menuIds.Count > 0)
+        {
+            var newPermissions = menuIds.Select(menuId => new Entities.Phanquyenchucnang
+            {
+                Nguoidungid = userId,
+                Quyenid = roleId,
+                Menuid = menuId
+            });
+
+            await dbContext.Phanquyenchucnangs.AddRangeAsync(newPermissions, cancellationToken);
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
 }

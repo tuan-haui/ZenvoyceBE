@@ -15,6 +15,8 @@ public partial class Ttcty
 
     public string? Dienthoai { get; set; }
 
+    public short? Trangthai { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
@@ -24,8 +26,6 @@ public partial class Ttcty
     public Guid? UpdatedBy { get; set; }
 
     public bool? IsDeleted { get; set; }
-
-    public short? Trangthai { get; set; }
 
     public virtual ICollection<Danhmuchanghoa> Danhmuchanghoas { get; set; } = new List<Danhmuchanghoa>();
 
