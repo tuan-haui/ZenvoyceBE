@@ -1,0 +1,199 @@
+using Microsoft.EntityFrameworkCore;
+using Zenvoyce.Application.Abstractions.Persistence;
+using Zenvoyce.Domain.Entities;
+using ZenvoyceDbContext = Zenvoyce.Infrastructure.Entities.ZenvoyceDbContext;
+
+namespace Zenvoyce.Infrastructure.Persistence.Repositories;
+
+public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
+{
+    public async Task CreateDraftInvoiceAsync(Hoadon invoice, IReadOnlyCollection<HoadonHanghoa> items, HoadonLichsu history, CancellationToken cancellationToken)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            dbContext.Tthoadons.Add(new Entities.Tthoadon
+            {
+                Id = invoice.Id,
+                Donviid = invoice.Donviid,
+                Khachhangid = invoice.Khachhangid,
+                Mauctyid = invoice.Mauctyid,
+                Kyhieu = invoice.Kyhieu,
+                Sohoadon = invoice.Sohoadon,
+                Ngaylap = invoice.Ngaylap,
+                Tongtien = invoice.Tongtien,
+                Tienthue = invoice.Tienthue,
+                Tongthanhtoan = invoice.Tongthanhtoan,
+                Trangthai = invoice.Trangthai,
+                Xmldaky = invoice.Xmldaky,
+                CreatedAt = invoice.CreatedAt,
+                UpdatedAt = invoice.UpdatedAt,
+                CreatedBy = invoice.CreatedBy,
+                UpdatedBy = invoice.UpdatedBy,
+                IsDeleted = invoice.IsDeleted
+            });
+
+            var detailEntities = items.Select(item => new Entities.Tthanghoa
+            {
+                Id = item.Id,
+                Hoadonid = item.Hoadonid,
+                Hanghoaid = item.Hanghoaid,
+                Soluong = item.Soluong,
+                Dongia = item.Dongia,
+                Thuesuat = item.Thuesuat,
+                Thanhtien = item.Thanhtien
+            });
+            dbContext.Tthanghoas.AddRange(detailEntities);
+
+            dbContext.Lichsuhoadons.Add(new Entities.Lichsuhoadon
+            {
+                Id = history.Id,
+                Hoadonid = history.Hoadonid,
+                Hanhdong = history.Hanhdong,
+                Trangthaicu = history.Trangthaicu,
+                Trangthaimoi = history.Trangthaimoi,
+                Thoigian = history.Thoigian,
+                Nguoidungid = history.Nguoidungid
+            });
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    public async Task<Hoadon?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var entity = await dbContext.Tthoadons
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted != true, cancellationToken);
+
+        return entity is null ? null : MapInvoice(entity);
+    }
+
+    public async Task UpdateStatusAsync(
+        Guid invoiceId,
+        string newStatus,
+        HoadonLichsu history,
+        DateTime updatedAt,
+        Guid? updatedBy,
+        CancellationToken cancellationToken)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            var invoice = await dbContext.Tthoadons.FirstOrDefaultAsync(x => x.Id == invoiceId && x.IsDeleted != true, cancellationToken)
+                ?? throw new KeyNotFoundException("Không tìm thấy hóa đơn.");
+
+            invoice.Trangthai = newStatus;
+            invoice.UpdatedAt = updatedAt;
+            invoice.UpdatedBy = updatedBy;
+
+            dbContext.Lichsuhoadons.Add(new Entities.Lichsuhoadon
+            {
+                Id = history.Id,
+                Hoadonid = history.Hoadonid,
+                Hanhdong = history.Hanhdong,
+                Trangthaicu = history.Trangthaicu,
+                Trangthaimoi = history.Trangthaimoi,
+                Thoigian = history.Thoigian,
+                Nguoidungid = history.Nguoidungid
+            });
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    public async Task<IReadOnlyCollection<Hoadon>> GetInvoicesAsync(
+        Guid? khachhangId,
+        string? trangthai,
+        DateTime? fromDate,
+        DateTime? toDate,
+        CancellationToken cancellationToken)
+    {
+        var query = dbContext.Tthoadons
+            .AsNoTracking()
+            .Where(x => x.IsDeleted != true);
+
+        if (khachhangId.HasValue)
+        {
+            query = query.Where(x => x.Khachhangid == khachhangId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(trangthai))
+        {
+            var normalized = trangthai.Trim().ToLower();
+            query = query.Where(x => x.Trangthai != null && x.Trangthai.ToLower() == normalized);
+        }
+
+        if (fromDate.HasValue)
+        {
+            query = query.Where(x => x.Ngaylap.HasValue && x.Ngaylap.Value >= fromDate.Value);
+        }
+
+        if (toDate.HasValue)
+        {
+            query = query.Where(x => x.Ngaylap.HasValue && x.Ngaylap.Value <= toDate.Value);
+        }
+
+        var entities = await query
+            .OrderByDescending(x => x.Ngaylap)
+            .ToListAsync(cancellationToken);
+
+        return entities.Select(MapInvoice).ToArray();
+    }
+
+    public async Task<IReadOnlyCollection<HoadonLichsu>> GetInvoiceHistoryAsync(Guid invoiceId, CancellationToken cancellationToken)
+    {
+        var history = await dbContext.Lichsuhoadons
+            .AsNoTracking()
+            .Where(x => x.Hoadonid == invoiceId)
+            .OrderByDescending(x => x.Thoigian)
+            .ToListAsync(cancellationToken);
+
+        return history.Select(x => new HoadonLichsu
+        {
+            Id = x.Id,
+            Hoadonid = x.Hoadonid ?? Guid.Empty,
+            Hanhdong = x.Hanhdong ?? string.Empty,
+            Trangthaicu = x.Trangthaicu,
+            Trangthaimoi = x.Trangthaimoi,
+            Thoigian = x.Thoigian ?? DateTime.MinValue,
+            Nguoidungid = x.Nguoidungid
+        }).ToArray();
+    }
+
+    private static Hoadon MapInvoice(Entities.Tthoadon entity)
+    {
+        return new Hoadon
+        {
+            Id = entity.Id,
+            Donviid = entity.Donviid ?? Guid.Empty,
+            Khachhangid = entity.Khachhangid ?? Guid.Empty,
+            Mauctyid = entity.Mauctyid ?? Guid.Empty,
+            Kyhieu = entity.Kyhieu,
+            Sohoadon = entity.Sohoadon,
+            Ngaylap = entity.Ngaylap ?? DateTime.MinValue,
+            Tongtien = entity.Tongtien ?? 0,
+            Tienthue = entity.Tienthue ?? 0,
+            Tongthanhtoan = entity.Tongthanhtoan ?? 0,
+            Trangthai = entity.Trangthai ?? string.Empty,
+            Xmldaky = entity.Xmldaky,
+            CreatedAt = entity.CreatedAt ?? DateTime.MinValue,
+            UpdatedAt = entity.UpdatedAt ?? DateTime.MinValue,
+            CreatedBy = entity.CreatedBy,
+            UpdatedBy = entity.UpdatedBy,
+            IsDeleted = entity.IsDeleted ?? false
+        };
+    }
+}

@@ -15,9 +15,9 @@ public partial class Tthanghoa
 
     public decimal? Dongia { get; set; }
 
-    public decimal? Thanhtien { get; set; }
-
     public decimal? Thuesuat { get; set; }
+
+    public decimal? Thanhtien { get; set; }
 
     public virtual Danhmuchanghoa? Hanghoa { get; set; }
 

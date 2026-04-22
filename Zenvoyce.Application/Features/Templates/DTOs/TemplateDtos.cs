@@ -28,4 +28,12 @@ public class CompanyTemplateDto
     public bool Lamaumacdinh { get; set; }
     public DateTime? Ngaykichhoat { get; set; }
     public IReadOnlyCollection<TemplateMetadataDto> Metadata { get; set; } = Array.Empty<TemplateMetadataDto>();
+    public IReadOnlyCollection<TemplateStatusHistoryDto> LichsuTrangthai { get; set; } = Array.Empty<TemplateStatusHistoryDto>();
+}
+
+public class TemplateStatusHistoryDto
+{
+    public short Trangthai { get; set; }
+    public DateTime Thoigian { get; set; }
+    public string? Ghichu { get; set; }
 }

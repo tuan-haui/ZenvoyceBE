@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zenvoyce.Application.Features.Templates.Commands.ApplyTemplate;
 using Zenvoyce.Application.Features.Templates.Commands.CreateBaseTemplate;
+using Zenvoyce.Application.Features.Templates.Commands.NotifyTaxAuthority;
 using Zenvoyce.Application.Features.Templates.Commands.UpdateBaseTemplate;
+using Zenvoyce.Application.Features.Templates.Queries.GetCompanyTemplates;
 
 namespace Zenvoyce.API.Controllers;
 
@@ -30,5 +32,23 @@ public class TemplatesController(ISender mediator) : ControllerBase
     {
         var result = await mediator.Send(command);
         return Created("api/templates/company/apply", result);
+    }
+
+    [HttpGet("api/templates/company")]
+    public async Task<IActionResult> GetCompanyTemplates(
+        [FromQuery] Guid donviId,
+        [FromQuery] string? kyhieuMau,
+        [FromQuery] string? loaiHoadon,
+        [FromQuery] short? trangthaiPhatHanh)
+    {
+        var result = await mediator.Send(new GetCompanyTemplatesQuery(donviId, kyhieuMau, loaiHoadon, trangthaiPhatHanh));
+        return Ok(result);
+    }
+
+    [HttpPost("api/templates/company/{id:guid}/notify-tax")]
+    public async Task<IActionResult> NotifyTaxAuthority(Guid id)
+    {
+        var result = await mediator.Send(new NotifyTaxAuthorityCommand(id));
+        return Ok(result);
     }
 }

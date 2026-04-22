@@ -32,13 +32,11 @@ public partial class Mauchocty
     /// </summary>
     public bool? Lamaumacdinh { get; set; }
 
-    public DateTimeOffset? Ngaykichhoat { get; set; }
+    public DateTime? Ngaykichhoat { get; set; }
 
     public virtual Ttcty? Donvi { get; set; }
 
     public virtual Mauhoadongoc? Maugoc { get; set; }
 
     public virtual ICollection<Thongtinhdmau> Thongtinhdmaus { get; set; } = new List<Thongtinhdmau>();
-
-    public virtual ICollection<Tthoadon> Tthoadons { get; set; } = new List<Tthoadon>();
 }

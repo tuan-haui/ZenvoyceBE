@@ -11,9 +11,19 @@ public partial class Tthoadon
 
     public Guid? Khachhangid { get; set; }
 
+    public Guid? Mauctyid { get; set; }
+
+    public string? Kyhieu { get; set; }
+
+    public string? Sohoadon { get; set; }
+
     public DateTime? Ngaylap { get; set; }
 
     public decimal? Tongtien { get; set; }
+
+    public decimal? Tienthue { get; set; }
+
+    public decimal? Tongthanhtoan { get; set; }
 
     public string? Trangthai { get; set; }
 
@@ -29,16 +39,6 @@ public partial class Tthoadon
 
     public bool? IsDeleted { get; set; }
 
-    public Guid? Mauctyid { get; set; }
-
-    public string? Kyhieu { get; set; }
-
-    public string? Sohoadon { get; set; }
-
-    public decimal? Tienthue { get; set; }
-
-    public decimal? Tongthanhtoan { get; set; }
-
     public virtual Ttcty? Donvi { get; set; }
 
     public virtual Ttkhachhang? Khachhang { get; set; }
@@ -46,8 +46,6 @@ public partial class Tthoadon
     public virtual ICollection<Lichsuguithue> Lichsuguithues { get; set; } = new List<Lichsuguithue>();
 
     public virtual ICollection<Lichsuhoadon> Lichsuhoadons { get; set; } = new List<Lichsuhoadon>();
-
-    public virtual Mauchocty? Maucty { get; set; }
 
     public virtual ICollection<Qlkyso> Qlkysos { get; set; } = new List<Qlkyso>();
 

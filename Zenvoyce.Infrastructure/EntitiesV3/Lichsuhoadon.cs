@@ -11,13 +11,13 @@ public partial class Lichsuhoadon
 
     public string? Hanhdong { get; set; }
 
-    public DateTime? Thoigian { get; set; }
-
-    public Guid? Nguoidungid { get; set; }
-
     public string? Trangthaicu { get; set; }
 
     public string? Trangthaimoi { get; set; }
+
+    public DateTime? Thoigian { get; set; }
+
+    public Guid? Nguoidungid { get; set; }
 
     public virtual Tthoadon? Hoadon { get; set; }
 
