@@ -1,0 +1,6 @@
+@ZenvoyceBE_HostAddress = http://localhost:5242
+
+GET {{ZenvoyceBE_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
