@@ -1,0 +1,155 @@
+using Microsoft.EntityFrameworkCore;
+using Zenvoyce.Application.Abstractions.Persistence;
+using Zenvoyce.Domain.Entities;
+using ZenvoyceDbContext = Zenvoyce.Infrastructure.Entities.ZenvoyceDbContext;
+
+namespace Zenvoyce.Infrastructure.Persistence.Repositories;
+
+public class TemplateRepository(ZenvoyceDbContext dbContext) : ITemplateRepository
+{
+    public Task<bool> BaseTemplateCodeExistsAsync(string kyhieu, Guid? excludingId, CancellationToken cancellationToken)
+    {
+        return dbContext.Mauhoadongocs.AnyAsync(
+            x => x.Kyhieu == kyhieu && (!excludingId.HasValue || x.Id != excludingId.Value),
+            cancellationToken);
+    }
+
+    public async Task<Mauhoadongoc?> GetBaseTemplateByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var template = await dbContext.Mauhoadongocs
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        return template is null ? null : MapToDomain(template);
+    }
+
+    public Task<bool> IsBaseTemplateInUseAsync(Guid baseTemplateId, CancellationToken cancellationToken)
+    {
+        return dbContext.Mauchocties.AnyAsync(x => x.Maugocid == baseTemplateId, cancellationToken);
+    }
+
+    public async Task AddBaseTemplateAsync(Mauhoadongoc template, CancellationToken cancellationToken)
+    {
+        var entity = new Entities.Mauhoadongoc
+        {
+            Id = template.Id,
+            Tenmau = template.Tenmau,
+            Loaihoadon = template.Loaihoadon,
+            Kyhieu = template.Kyhieu,
+            Cautrucxml = template.Cautrucxml,
+            CreatedAt = template.CreatedAt,
+            UpdatedAt = template.UpdatedAt,
+            CreatedBy = template.CreatedBy,
+            UpdatedBy = template.UpdatedBy,
+            IsDeleted = template.IsDeleted
+        };
+
+        dbContext.Mauhoadongocs.Add(entity);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UpdateBaseTemplateAsync(Mauhoadongoc template, CancellationToken cancellationToken)
+    {
+        var entity = await dbContext.Mauhoadongocs.FirstOrDefaultAsync(x => x.Id == template.Id, cancellationToken)
+            ?? throw new KeyNotFoundException("Không tìm thấy mẫu hóa đơn gốc.");
+
+        entity.Tenmau = template.Tenmau;
+        entity.Loaihoadon = template.Loaihoadon;
+        entity.Kyhieu = template.Kyhieu;
+        entity.Cautrucxml = template.Cautrucxml;
+        entity.UpdatedAt = template.UpdatedAt;
+        entity.UpdatedBy = template.UpdatedBy;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public Task<bool> BaseTemplateExistsAsync(Guid baseTemplateId, CancellationToken cancellationToken)
+    {
+        return dbContext.Mauhoadongocs.AnyAsync(x => x.Id == baseTemplateId, cancellationToken);
+    }
+
+    public Task<bool> CompanyExistsAsync(Guid companyId, CancellationToken cancellationToken)
+    {
+        return dbContext.Ttcties.AnyAsync(x => x.Id == companyId, cancellationToken);
+    }
+
+    public async Task ApplyTemplateAsync(
+        Mauchocty companyTemplate,
+        IReadOnlyCollection<Thongtinhdmau> metadata,
+        bool setDefaultTemplate,
+        CancellationToken cancellationToken)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            if (setDefaultTemplate)
+            {
+                await dbContext.Mauchocties
+                    .Where(x => x.Donviid == companyTemplate.Donviid && x.Lamaumacdinh == true)
+                    .ExecuteUpdateAsync(
+                        setters => setters
+                            .SetProperty(x => x.Lamaumacdinh, false)
+                            .SetProperty(x => x.UpdatedAt, companyTemplate.UpdatedAt)
+                            .SetProperty(x => x.UpdatedBy, companyTemplate.UpdatedBy),
+                        cancellationToken);
+            }
+
+            var companyTemplateEntity = new Entities.Mauchocty
+            {
+                Id = companyTemplate.Id,
+                Maugocid = companyTemplate.Maugocid,
+                Donviid = companyTemplate.Donviid,
+                Css = companyTemplate.Css,
+                Header = companyTemplate.Header,
+                Trangthaiphathanh = companyTemplate.Trangthaiphathanh,
+                Lamaumacdinh = companyTemplate.Lamaumacdinh,
+                Ngaykichhoat = companyTemplate.Ngaykichhoat,
+                CreatedAt = companyTemplate.CreatedAt,
+                UpdatedAt = companyTemplate.UpdatedAt,
+                CreatedBy = companyTemplate.CreatedBy,
+                UpdatedBy = companyTemplate.UpdatedBy,
+                IsDeleted = companyTemplate.IsDeleted
+            };
+            dbContext.Mauchocties.Add(companyTemplateEntity);
+
+            if (metadata.Count > 0)
+            {
+                var metadataEntities = metadata.Select(x => new Entities.Thongtinhdmau
+                {
+                    Id = x.Id,
+                    Mauctyid = x.Mauctyid,
+                    Tentruong = x.Tentruong,
+                    Vitrinam = x.Vitrinam,
+                    Font = x.Font,
+                    Canle = x.Canle
+                });
+                dbContext.Thongtinhdmaus.AddRange(metadataEntities);
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    private static Mauhoadongoc MapToDomain(Entities.Mauhoadongoc entity)
+    {
+        return new Mauhoadongoc
+        {
+            Id = entity.Id,
+            Tenmau = entity.Tenmau,
+            Loaihoadon = entity.Loaihoadon,
+            Kyhieu = entity.Kyhieu,
+            Cautrucxml = entity.Cautrucxml,
+            CreatedAt = entity.CreatedAt ?? DateTime.MinValue,
+            UpdatedAt = entity.UpdatedAt ?? DateTime.MinValue,
+            CreatedBy = entity.CreatedBy,
+            UpdatedBy = entity.UpdatedBy,
+            IsDeleted = entity.IsDeleted ?? false
+        };
+    }
+}

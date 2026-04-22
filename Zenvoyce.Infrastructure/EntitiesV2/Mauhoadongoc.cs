@@ -11,6 +11,10 @@ public partial class Mauhoadongoc
 
     public string? Cautrucxml { get; set; }
 
+    public string? Loaihoadon { get; set; }
+
+    public string? Kyhieu { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
@@ -20,10 +24,6 @@ public partial class Mauhoadongoc
     public Guid? UpdatedBy { get; set; }
 
     public bool? IsDeleted { get; set; }
-
-    public string? Loaihoadon { get; set; }
-
-    public string? Kyhieu { get; set; }
 
     public virtual ICollection<Mauchocty> Mauchocties { get; set; } = new List<Mauchocty>();
 }

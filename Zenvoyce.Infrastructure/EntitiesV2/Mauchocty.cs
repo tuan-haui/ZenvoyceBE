@@ -15,6 +15,12 @@ public partial class Mauchocty
 
     public string? Header { get; set; }
 
+    public short? Trangthaiphathanh { get; set; }
+
+    public bool? Lamaumacdinh { get; set; }
+
+    public DateTime? Ngaykichhoat { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
@@ -24,15 +30,6 @@ public partial class Mauchocty
     public Guid? UpdatedBy { get; set; }
 
     public bool? IsDeleted { get; set; }
-
-    public short? Trangthaiphathanh { get; set; }
-
-    /// <summary>
-    /// Là mẫu mặc định?
-    /// </summary>
-    public bool? Lamaumacdinh { get; set; }
-
-    public DateTimeOffset? Ngaykichhoat { get; set; }
 
     public virtual Ttcty? Donvi { get; set; }
 

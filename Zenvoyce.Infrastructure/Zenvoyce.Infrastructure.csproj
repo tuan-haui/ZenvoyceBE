@@ -7,9 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="EntitiesV1\**" />
+    <Compile Remove="EntitiesV2\**" />
     <Compile Remove="Entities_Backup\**" />
+    <Compile Remove="Entities_V2\**" />
+    <EmbeddedResource Remove="EntitiesV1\**" />
+    <EmbeddedResource Remove="EntitiesV2\**" />
     <EmbeddedResource Remove="Entities_Backup\**" />
+    <EmbeddedResource Remove="Entities_V2\**" />
+    <None Remove="EntitiesV1\**" />
+    <None Remove="EntitiesV2\**" />
     <None Remove="Entities_Backup\**" />
+    <None Remove="Entities_V2\**" />
   </ItemGroup>
 
   <ItemGroup>

@@ -162,11 +162,10 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasColumnName("is_deleted");
             entity.Property(e => e.Lamaumacdinh)
                 .HasDefaultValue(false)
-                .HasComment("Là mẫu mặc định?")
                 .HasColumnName("lamaumacdinh");
             entity.Property(e => e.Maugocid).HasColumnName("maugocid");
             entity.Property(e => e.Ngaykichhoat)
-                .HasColumnType("time with time zone")
+                .HasColumnType("timestamp without time zone")
                 .HasColumnName("ngaykichhoat");
             entity.Property(e => e.Trangthaiphathanh)
                 .HasDefaultValue((short)0)
