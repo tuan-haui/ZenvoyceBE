@@ -173,6 +173,86 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
         }).ToArray();
     }
 
+    public async Task UpdateSignedAsync(
+        Guid invoiceId,
+        string xmlDaky,
+        HoadonLichsu history,
+        DateTime updatedAt,
+        Guid? updatedBy,
+        CancellationToken cancellationToken)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            var invoice = await dbContext.Tthoadons.FirstOrDefaultAsync(x => x.Id == invoiceId && x.IsDeleted != true, cancellationToken)
+                ?? throw new KeyNotFoundException("Không tìm thấy hóa đơn.");
+
+            invoice.Trangthai = "Signed";
+            invoice.Xmldaky = xmlDaky;
+            invoice.UpdatedAt = updatedAt;
+            invoice.UpdatedBy = updatedBy;
+
+            dbContext.Lichsuhoadons.Add(new Entities.Lichsuhoadon
+            {
+                Id = history.Id,
+                Hoadonid = history.Hoadonid,
+                Hanhdong = history.Hanhdong,
+                Trangthaicu = history.Trangthaicu,
+                Trangthaimoi = history.Trangthaimoi,
+                Thoigian = history.Thoigian,
+                Nguoidungid = history.Nguoidungid
+            });
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    public async Task UpdatePublishedAsync(
+        Guid invoiceId,
+        string soHoadon,
+        HoadonLichsu history,
+        DateTime updatedAt,
+        Guid? updatedBy,
+        CancellationToken cancellationToken)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            var invoice = await dbContext.Tthoadons.FirstOrDefaultAsync(x => x.Id == invoiceId && x.IsDeleted != true, cancellationToken)
+                ?? throw new KeyNotFoundException("Không tìm thấy hóa đơn.");
+
+            invoice.Trangthai = "Issued";
+            invoice.Sohoadon = soHoadon;
+            invoice.UpdatedAt = updatedAt;
+            invoice.UpdatedBy = updatedBy;
+
+            dbContext.Lichsuhoadons.Add(new Entities.Lichsuhoadon
+            {
+                Id = history.Id,
+                Hoadonid = history.Hoadonid,
+                Hanhdong = history.Hanhdong,
+                Trangthaicu = history.Trangthaicu,
+                Trangthaimoi = history.Trangthaimoi,
+                Thoigian = history.Thoigian,
+                Nguoidungid = history.Nguoidungid
+            });
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
     private static Hoadon MapInvoice(Entities.Tthoadon entity)
     {
         return new Hoadon
