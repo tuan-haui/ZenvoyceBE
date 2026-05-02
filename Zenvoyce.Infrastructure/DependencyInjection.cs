@@ -2,10 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Zenvoyce.Application.Abstractions;
 using Zenvoyce.Application.Abstractions.Persistence;
 using Zenvoyce.Domain.Interfaces;
 using Zenvoyce.Infrastructure.Entities;
 using Zenvoyce.Infrastructure.Persistence.Repositories;
+using Zenvoyce.Infrastructure.Options;
 using Zenvoyce.Infrastructure.Security;
 using Zenvoyce.Infrastructure.Services;
 
@@ -20,6 +22,9 @@ public static class DependencyInjection
 
         services.AddOptions<JwtOptions>()
             .Bind(configuration.GetSection(JwtOptions.SectionName));
+        services.AddOptions<BootstrapOptions>()
+            .Bind(configuration.GetSection(BootstrapOptions.SectionName));
+        services.AddScoped<IApplicationInitializationService, ApplicationInitializationService>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
         services.AddScoped<IUserRepository, UserRepository>();

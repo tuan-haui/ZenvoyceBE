@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zenvoyce.Application.Features.Auth.Commands.Login;
 using Zenvoyce.Application.Features.Auth.Commands.Logout;
-using Zenvoyce.Application.Features.Auth.Commands.SeedFirstAdmin;
+using Zenvoyce.Application.Features.System.Commands.InitializeSystem;
+using Zenvoyce.Application.Features.System.DTOs;
 using Zenvoyce.Application.Features.Auth.DTOs;
 
 namespace Zenvoyce.API.Controllers;
@@ -23,14 +24,15 @@ public class AuthController(ISender mediator) : ControllerBase
     }
 
     /// <summary>
-    /// Chỉ có hiệu lực khi chưa có bất kỳ người dùng nào; tạo admin / Admin@123.
+    /// Khởi tạo hệ thống (một lần): nhóm quyền + menu + phân quyền sidebar + admin từ appsettings (Bootstrap).
+    /// Chỉ chạy khi chưa có người dùng nào.
     /// </summary>
-    [HttpPost("seed-first-admin")]
+    [HttpPost("initialize-system")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(SeedFirstAdminResponseDto), 200)]
-    public async Task<ActionResult<SeedFirstAdminResponseDto>> SeedFirstAdmin()
+    [ProducesResponseType(typeof(InitializeSystemResponseDto), 200)]
+    public async Task<ActionResult<InitializeSystemResponseDto>> InitializeSystem()
     {
-        var result = await mediator.Send(new SeedFirstAdminCommand());
+        var result = await mediator.Send(new InitializeSystemCommand());
         return Ok(result);
     }
 

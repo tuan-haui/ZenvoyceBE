@@ -60,9 +60,10 @@ public class UserRepository(ZenvoyceDbContext dbContext) : IUserRepository
         return users.Select(x => x.ToDomain()).ToArray();
     }
 
-    public Task<int> CountAsync(CancellationToken cancellationToken)
+    public async Task<int> CountAsync(CancellationToken cancellationToken)
     {
-        return dbContext.Nguoidungs.CountAsync(x => x.IsDeleted != true, cancellationToken);
+        var result = await dbContext.Nguoidungs.CountAsync(x => x.IsDeleted != true, cancellationToken);
+        return result;
     }
 
     public async Task AddAsync(DomainUser user, CancellationToken cancellationToken)
