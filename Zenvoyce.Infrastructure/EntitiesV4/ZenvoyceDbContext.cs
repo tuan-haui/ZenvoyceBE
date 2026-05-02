@@ -47,7 +47,7 @@ public partial class ZenvoyceDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=ep-lively-shape-aoidkfnj-pooler.c-2.ap-southeast-1.aws.neon.tech;Port=5432;Database=neondb;Username=neondb_owner;Password=npg_H6yWkpeKF5nZ;");
+        => optionsBuilder.UseNpgsql("Host=ndiucphydbht.db.dbaas.dev;Port=31507;Database=amhtrk;Username=JPfmlWk;Password=LtsRnNG");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -130,10 +130,10 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("thoigian");
             entity.Property(e => e.Trangthaicu)
-                .HasMaxLength(100)
+                .HasMaxLength(50)
                 .HasColumnName("trangthaicu");
             entity.Property(e => e.Trangthaimoi)
-                .HasMaxLength(100)
+                .HasMaxLength(50)
                 .HasColumnName("trangthaimoi");
 
             entity.HasOne(d => d.Hoadon).WithMany(p => p.Lichsuhoadons)
@@ -168,9 +168,12 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasColumnName("is_deleted");
             entity.Property(e => e.Lamaumacdinh)
                 .HasDefaultValue(false)
+                .HasComment("Là mẫu mặc định?")
                 .HasColumnName("lamaumacdinh");
             entity.Property(e => e.Maugocid).HasColumnName("maugocid");
-            entity.Property(e => e.Ngaykichhoat).HasColumnName("ngaykichhoat");
+            entity.Property(e => e.Ngaykichhoat)
+                .HasColumnType("time with time zone")
+                .HasColumnName("ngaykichhoat");
             entity.Property(e => e.Trangthaiphathanh)
                 .HasDefaultValue((short)0)
                 .HasColumnName("trangthaiphathanh");
@@ -195,8 +198,6 @@ public partial class ZenvoyceDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("mauhoadongoc_pkey");
 
             entity.ToTable("mauhoadongoc");
-
-            entity.HasIndex(e => e.Kyhieu, "mauhoadongoc_unique").IsUnique();
 
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
@@ -242,12 +243,6 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.Dienthoai)
                 .HasMaxLength(20)
                 .HasColumnName("dienthoai");
-            entity.Property(e => e.Email)
-                .HasMaxLength(255)
-                .HasColumnName("email");
-            entity.Property(e => e.Hoten)
-                .HasMaxLength(200)
-                .HasColumnName("hoten");
             entity.Property(e => e.IsDeleted)
                 .HasDefaultValue(false)
                 .HasColumnName("is_deleted");
@@ -255,6 +250,12 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.Matkhau)
                 .HasMaxLength(255)
                 .HasColumnName("matkhau");
+            entity.Property(e => e.Hoten)
+                .HasMaxLength(200)
+                .HasColumnName("hoten");
+            entity.Property(e => e.Email)
+                .HasMaxLength(255)
+                .HasColumnName("email");
             entity.Property(e => e.Tendangnhap)
                 .HasMaxLength(50)
                 .HasColumnName("tendangnhap");
@@ -435,9 +436,7 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.Tendonvi)
                 .HasMaxLength(255)
                 .HasColumnName("tendonvi");
-            entity.Property(e => e.Trangthai)
-                .HasDefaultValue((short)0)
-                .HasColumnName("trangthai");
+            entity.Property(e => e.Trangthai).HasColumnName("trangthai");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("updated_at");
@@ -465,7 +464,7 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasPrecision(18, 2)
                 .HasColumnName("thanhtien");
             entity.Property(e => e.Thuesuat)
-                .HasPrecision(18, 2)
+                .HasPrecision(5, 2)
                 .HasColumnName("thuesuat");
 
             entity.HasOne(d => d.Hanghoa).WithMany(p => p.Tthanghoas)
@@ -490,7 +489,6 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasColumnName("id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.Donviid).HasColumnName("donviid");
@@ -508,8 +506,6 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.Sohoadon)
                 .HasMaxLength(50)
                 .HasColumnName("sohoadon");
-            entity.Property(e => e.ThamchieuHoadonId).HasColumnName("thamchieu_hoadon_id");
-            entity.Property(e => e.Thamchieuhoadonid).HasColumnName("thamchieuhoadonid");
             entity.Property(e => e.Tienthue)
                 .HasPrecision(18, 2)
                 .HasColumnName("tienthue");
@@ -524,10 +520,10 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasColumnName("trangthai");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
                 .HasColumnName("updated_at");
             entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
             entity.Property(e => e.Xmldaky).HasColumnName("xmldaky");
+            entity.Property(e => e.Thamchieuhoadonid).HasColumnName("thamchieu_hoadon_id");
 
             entity.HasOne(d => d.Donvi).WithMany(p => p.Tthoadons)
                 .HasForeignKey(d => d.Donviid)
@@ -556,7 +552,6 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasColumnName("id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.Dienthoai)
@@ -577,7 +572,6 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasColumnName("tenkhachhang");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone")
                 .HasColumnName("updated_at");
             entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
 

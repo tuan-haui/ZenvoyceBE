@@ -3,17 +3,19 @@ using System.Collections.Generic;
 
 namespace Zenvoyce.Infrastructure.Entities;
 
-public partial class Mauchocty
+public partial class Ttkhachhang
 {
     public Guid Id { get; set; }
 
-    public Guid? Maugocid { get; set; }
-
     public Guid? Donviid { get; set; }
 
-    public string? Css { get; set; }
+    public string Tenkhachhang { get; set; } = null!;
 
-    public string? Header { get; set; }
+    public string? Masothue { get; set; }
+
+    public string? Email { get; set; }
+
+    public string? Dienthoai { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
@@ -25,17 +27,7 @@ public partial class Mauchocty
 
     public bool? IsDeleted { get; set; }
 
-    public short? Trangthaiphathanh { get; set; }
-
-    public bool? Lamaumacdinh { get; set; }
-
-    public DateTime? Ngaykichhoat { get; set; }
-
     public virtual Ttcty? Donvi { get; set; }
-
-    public virtual Mauhoadongoc? Maugoc { get; set; }
-
-    public virtual ICollection<Thongtinhdmau> Thongtinhdmaus { get; set; } = new List<Thongtinhdmau>();
 
     public virtual ICollection<Tthoadon> Tthoadons { get; set; } = new List<Tthoadon>();
 }

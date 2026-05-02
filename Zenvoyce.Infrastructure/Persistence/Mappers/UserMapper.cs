@@ -13,6 +13,8 @@ internal static class UserMapper
             Madonvi = source.Madonvi,
             Tendangnhap = source.Tendangnhap,
             Matkhau = source.Matkhau,
+            Hoten = source.Hoten,
+            Email = source.Email,
             Dienthoai = source.Dienthoai,
             Trangthai = source.Trangthai ?? 1,
             CreatedAt = source.CreatedAt ?? DateTime.UtcNow,
@@ -29,6 +31,8 @@ internal static class UserMapper
         target.Madonvi = source.Madonvi;
         target.Tendangnhap = source.Tendangnhap;
         target.Matkhau = source.Matkhau;
+        target.Hoten = source.Hoten;
+        target.Email = source.Email;
         target.Dienthoai = source.Dienthoai;
         target.Trangthai = source.Trangthai;
         target.CreatedAt = source.CreatedAt;

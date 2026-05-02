@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zenvoyce.Application.Features.Menus.Commands.CreateMenu;
+using Zenvoyce.Application.Features.Menus.Queries.GetMenusForRole;
 using Zenvoyce.Application.Features.Menus.Queries.GetSidebar;
 
 namespace Zenvoyce.API.Controllers;
@@ -11,6 +12,13 @@ namespace Zenvoyce.API.Controllers;
 [Authorize]
 public class MenusController(ISender mediator) : ControllerBase
 {
+    [HttpGet("for-role/{roleId:guid}")]
+    public async Task<IActionResult> GetMenusForRole(Guid roleId)
+    {
+        var result = await mediator.Send(new GetMenusForRoleQuery(roleId));
+        return Ok(result);
+    }
+
     [HttpGet("sidebar")]
     public async Task<IActionResult> GetSidebar()
     {

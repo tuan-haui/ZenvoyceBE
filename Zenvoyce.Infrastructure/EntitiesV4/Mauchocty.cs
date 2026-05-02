@@ -27,9 +27,12 @@ public partial class Mauchocty
 
     public short? Trangthaiphathanh { get; set; }
 
+    /// <summary>
+    /// Là mẫu mặc định?
+    /// </summary>
     public bool? Lamaumacdinh { get; set; }
 
-    public DateTime? Ngaykichhoat { get; set; }
+    public DateTimeOffset? Ngaykichhoat { get; set; }
 
     public virtual Ttcty? Donvi { get; set; }
 

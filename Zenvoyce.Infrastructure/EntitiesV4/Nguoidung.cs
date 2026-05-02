@@ -13,6 +13,10 @@ public partial class Nguoidung
 
     public string Matkhau { get; set; } = null!;
 
+    public string? Hoten { get; set; }
+
+    public string? Email { get; set; }
+
     public string? Dienthoai { get; set; }
 
     public short? Trangthai { get; set; }
@@ -26,10 +30,6 @@ public partial class Nguoidung
     public Guid? UpdatedBy { get; set; }
 
     public bool? IsDeleted { get; set; }
-
-    public string? Hoten { get; set; }
-
-    public string? Email { get; set; }
 
     public virtual ICollection<Lichsuhoadon> Lichsuhoadons { get; set; } = new List<Lichsuhoadon>();
 

@@ -47,4 +47,17 @@ public class UserPermissionRepository(ZenvoyceDbContext dbContext) : IUserPermis
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<Guid>> GetAssignedMenuIdsAsync(
+        Guid roleId,
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.Phanquyenchucnangs
+            .AsNoTracking()
+            .Where(x => x.Nguoidungid == userId && x.Quyenid == roleId)
+            .Select(x => x.Menuid)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+    }
 }

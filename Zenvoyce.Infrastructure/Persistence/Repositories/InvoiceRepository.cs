@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Zenvoyce.Application.Abstractions.Persistence;
+using Zenvoyce.Application.Features.Invoices.DTOs;
 using Zenvoyce.Domain.Entities;
 using ZenvoyceDbContext = Zenvoyce.Infrastructure.Entities.ZenvoyceDbContext;
 
@@ -30,7 +31,8 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
                 UpdatedAt = invoice.UpdatedAt,
                 CreatedBy = invoice.CreatedBy,
                 UpdatedBy = invoice.UpdatedBy,
-                IsDeleted = invoice.IsDeleted
+                IsDeleted = invoice.IsDeleted,
+                Thamchieuhoadonid = invoice.Thamchieuhoadonid
             });
 
             var detailEntities = items.Select(item => new Entities.Tthanghoa
@@ -173,6 +175,71 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
         }).ToArray();
     }
 
+    public async Task<IReadOnlyCollection<SalesReportRow>> GetSalesByCustomerAsync(
+        Guid? donviId,
+        Guid? khachhangId,
+        DateTime? fromDate,
+        DateTime? toDate,
+        CancellationToken cancellationToken)
+    {
+        var q = dbContext.Tthoadons
+            .AsNoTracking()
+            .Where(x => x.IsDeleted != true && x.Trangthai != null && x.Trangthai.ToLower() == "issued");
+
+        if (donviId.HasValue)
+        {
+            q = q.Where(x => x.Donviid == donviId.Value);
+        }
+
+        if (khachhangId.HasValue)
+        {
+            q = q.Where(x => x.Khachhangid == khachhangId.Value);
+        }
+
+        if (fromDate.HasValue)
+        {
+            q = q.Where(x => x.Ngaylap.HasValue && x.Ngaylap.Value >= fromDate.Value);
+        }
+
+        if (toDate.HasValue)
+        {
+            q = q.Where(x => x.Ngaylap.HasValue && x.Ngaylap.Value <= toDate.Value);
+        }
+
+        var grouped = await q
+            .GroupBy(x => x.Khachhangid)
+            .Select(g => new
+            {
+                KhachHangId = g.Key,
+                SoHoaDon = g.Count(),
+                TongTienHang = g.Sum(x => x.Tongtien ?? 0),
+                TienThue = g.Sum(x => x.Tienthue ?? 0),
+                TongThanhToan = g.Sum(x => x.Tongthanhtoan ?? 0)
+            })
+            .ToListAsync(cancellationToken);
+
+        var khIds = grouped.Select(x => x.KhachHangId).Where(x => x.HasValue).Select(x => x!.Value).ToArray();
+        var names = await dbContext.Ttkhachhangs
+            .AsNoTracking()
+            .Where(x => khIds.Contains(x.Id))
+            .ToDictionaryAsync(x => x.Id, x => x.Tenkhachhang ?? string.Empty, cancellationToken);
+
+        return grouped
+            .Select(x => new SalesReportRow
+            {
+                KhachhangId = x.KhachHangId ?? Guid.Empty,
+                TenKhachHang = x.KhachHangId.HasValue && names.TryGetValue(x.KhachHangId.Value, out var n)
+                    ? n
+                    : "(Không xác định)",
+                SoHoaDon = x.SoHoaDon,
+                TongTienHang = x.TongTienHang,
+                TienThue = x.TienThue,
+                TongThanhToan = x.TongThanhToan
+            })
+            .OrderByDescending(x => x.TongThanhToan)
+            .ToArray();
+    }
+
     public async Task UpdateSignedAsync(
         Guid invoiceId,
         string xmlDaky,
@@ -273,7 +340,8 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
             UpdatedAt = entity.UpdatedAt ?? DateTime.MinValue,
             CreatedBy = entity.CreatedBy,
             UpdatedBy = entity.UpdatedBy,
-            IsDeleted = entity.IsDeleted ?? false
+            IsDeleted = entity.IsDeleted ?? false,
+            Thamchieuhoadonid = entity.Thamchieuhoadonid
         };
     }
 }

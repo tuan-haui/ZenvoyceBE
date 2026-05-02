@@ -32,6 +32,36 @@ public class MenuRepository(ZenvoyceDbContext dbContext) : IMenuRepository
         }).ToArray();
     }
 
+    public async Task<IReadOnlyCollection<Sysmenu>> GetMenusByRoleIdAsync(Guid roleId, CancellationToken cancellationToken)
+    {
+        var menus = await dbContext.Sysmenus
+            .AsNoTracking()
+            .Where(x => x.Quyenid == roleId)
+            .OrderBy(x => x.Tenmenu)
+            .ToListAsync(cancellationToken);
+
+        return menus.Select(ToDomain).ToArray();
+    }
+
+    public async Task<IReadOnlyCollection<Sysmenu>> GetAllMenusAsync(CancellationToken cancellationToken)
+    {
+        var menus = await dbContext.Sysmenus
+            .AsNoTracking()
+            .OrderBy(x => x.Tenmenu)
+            .ToListAsync(cancellationToken);
+
+        return menus.Select(ToDomain).ToArray();
+    }
+
+    private static Sysmenu ToDomain(Zenvoyce.Infrastructure.Entities.Sysmenu x) => new()
+    {
+        Id = x.Id,
+        Tenmenu = x.Tenmenu,
+        Duongdan = x.Duongdan,
+        MenuchaId = x.Menuchaid,
+        QuyenId = x.Quyenid
+    };
+
     public Task<bool> RouteExistsAsync(string routePath, CancellationToken cancellationToken)
     {
         return dbContext.Sysmenus.AnyAsync(

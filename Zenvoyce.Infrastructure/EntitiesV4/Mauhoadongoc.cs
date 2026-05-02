@@ -23,7 +23,7 @@ public partial class Mauhoadongoc
 
     public string? Loaihoadon { get; set; }
 
-    public string Kyhieu { get; set; } = null!;
+    public string? Kyhieu { get; set; }
 
     public virtual ICollection<Mauchocty> Mauchocties { get; set; } = new List<Mauchocty>();
 }

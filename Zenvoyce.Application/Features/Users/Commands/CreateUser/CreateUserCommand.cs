@@ -12,6 +12,8 @@ public record CreateUserCommand(
     Guid? Madonvi,
     string Tendangnhap,
     string Matkhau,
+    string? Hoten,
+    string? Email,
     string? Dienthoai,
     short Trangthai) : IRequest<UserDto>;
 
@@ -23,6 +25,10 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
         RuleFor(x => x.Matkhau)
             .NotEmpty()
             .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$");
+        When(x => !string.IsNullOrWhiteSpace(x.Email), () =>
+        {
+            RuleFor(x => x.Email!).EmailAddress();
+        });
     }
 }
 
@@ -40,6 +46,12 @@ public class CreateUserCommandHandler(
             throw new InvalidOperationException("Tên đăng nhập đã tồn tại.");
         }
 
+        if (!string.IsNullOrWhiteSpace(request.Email)
+            && await userRepository.EmailExistsAsync(request.Email, null, cancellationToken))
+        {
+            throw new InvalidOperationException("Email đã được sử dụng.");
+        }
+
         var now = dateTimeProvider.UtcNow;
         var user = new Nguoidung
         {
@@ -47,6 +59,8 @@ public class CreateUserCommandHandler(
             Madonvi = request.Madonvi,
             Tendangnhap = request.Tendangnhap,
             Matkhau = passwordHasher.Hash(request.Matkhau),
+            Hoten = string.IsNullOrWhiteSpace(request.Hoten) ? null : request.Hoten.Trim(),
+            Email = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email.Trim(),
             Dienthoai = request.Dienthoai,
             Trangthai = request.Trangthai,
             CreatedAt = now,

@@ -6,6 +6,8 @@ public class Nguoidung
     public Guid? Madonvi { get; set; }
     public string Tendangnhap { get; set; } = string.Empty;
     public string Matkhau { get; set; } = string.Empty;
+    public string? Hoten { get; set; }
+    public string? Email { get; set; }
     public string? Dienthoai { get; set; }
     public short Trangthai { get; set; } = 1;
     public DateTime CreatedAt { get; set; }

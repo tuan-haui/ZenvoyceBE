@@ -13,7 +13,8 @@ public record CreateInvoiceCommand(
     Guid MauctyId,
     string? Kyhieu,
     DateTime Ngaylap,
-    IReadOnlyCollection<InvoiceLineRequestDto> Hanghoas) : IRequest<CreateInvoiceResultDto>;
+    IReadOnlyCollection<InvoiceLineRequestDto> Hanghoas,
+    Guid? ThamChieuHoadonId = null) : IRequest<CreateInvoiceResultDto>;
 
 public class CreateInvoiceCommandValidator : AbstractValidator<CreateInvoiceCommand>
 {
@@ -56,6 +57,26 @@ public class CreateInvoiceCommandHandler(
             throw new InvalidOperationException("Khách hàng không hợp lệ hoặc không thuộc đơn vị.");
         }
 
+        if (request.ThamChieuHoadonId.HasValue)
+        {
+            var src = await invoiceRepository.GetByIdAsync(request.ThamChieuHoadonId.Value, cancellationToken);
+            if (src is null)
+            {
+                throw new InvalidOperationException("Không tìm thấy hóa đơn gốc.");
+            }
+
+            if (src.Donviid != request.DonviId)
+            {
+                throw new InvalidOperationException("Hóa đơn điều chỉnh phải cùng đơn vị với hóa đơn gốc.");
+            }
+
+            var st = src.Trangthai.Trim();
+            if (st is not ("Issued" or "Signed" or "PendingSign" or "Draft"))
+            {
+                throw new InvalidOperationException("Hóa đơn gốc không ở trạng thái cho phép lập điều chỉnh.");
+            }
+        }
+
         var productMap = await ValidateProductsAsync(request.DonviId, request.Hanghoas, cancellationToken);
 
         var invoiceId = Guid.NewGuid();
@@ -77,6 +98,7 @@ public class CreateInvoiceCommandHandler(
             Tienthue = tienthue,
             Tongthanhtoan = tongthanhtoan,
             Trangthai = DraftStatus,
+            Thamchieuhoadonid = request.ThamChieuHoadonId,
             Xmldaky = null,
             CreatedAt = now,
             UpdatedAt = now,

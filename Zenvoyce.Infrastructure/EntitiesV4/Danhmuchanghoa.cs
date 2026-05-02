@@ -3,13 +3,17 @@ using System.Collections.Generic;
 
 namespace Zenvoyce.Infrastructure.Entities;
 
-public partial class Mauhoadongoc
+public partial class Danhmuchanghoa
 {
     public Guid Id { get; set; }
 
-    public string Tenmau { get; set; } = null!;
+    public Guid? Donviid { get; set; }
 
-    public string? Cautrucxml { get; set; }
+    public string Tenhanghoa { get; set; } = null!;
+
+    public string? Donvitinh { get; set; }
+
+    public decimal? Dongia { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
@@ -21,9 +25,7 @@ public partial class Mauhoadongoc
 
     public bool? IsDeleted { get; set; }
 
-    public string? Loaihoadon { get; set; }
+    public virtual Ttcty? Donvi { get; set; }
 
-    public string Kyhieu { get; set; } = null!;
-
-    public virtual ICollection<Mauchocty> Mauchocties { get; set; } = new List<Mauchocty>();
+    public virtual ICollection<Tthanghoa> Tthanghoas { get; set; } = new List<Tthanghoa>();
 }

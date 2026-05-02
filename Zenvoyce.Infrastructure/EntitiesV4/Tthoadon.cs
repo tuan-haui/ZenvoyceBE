@@ -29,8 +29,6 @@ public partial class Tthoadon
 
     public bool? IsDeleted { get; set; }
 
-    public Guid? ThamchieuHoadonId { get; set; }
-
     public Guid? Mauctyid { get; set; }
 
     public string? Kyhieu { get; set; }

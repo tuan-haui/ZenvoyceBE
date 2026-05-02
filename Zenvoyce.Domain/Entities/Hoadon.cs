@@ -13,6 +13,8 @@ public class Hoadon
     public decimal Tienthue { get; set; }
     public decimal Tongthanhtoan { get; set; }
     public string Trangthai { get; set; } = string.Empty;
+    /// <summary>Hóa đơn gốc khi lập điều chỉnh/thay thế.</summary>
+    public Guid? Thamchieuhoadonid { get; set; }
     public string? Xmldaky { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

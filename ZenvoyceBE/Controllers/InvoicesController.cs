@@ -6,8 +6,10 @@ using Zenvoyce.Application.Features.Invoices.Commands.CreateInvoice;
 using Zenvoyce.Application.Features.Invoices.Commands.ForwardInvoice;
 using Zenvoyce.Application.Features.Invoices.Commands.PublishInvoice;
 using Zenvoyce.Application.Features.Invoices.Commands.SignInvoice;
+using Zenvoyce.Application.Features.Invoices.Commands.SendInvoiceEmail;
 using Zenvoyce.Application.Features.Invoices.Queries.GetInvoiceHistory;
 using Zenvoyce.Application.Features.Invoices.Queries.GetInvoices;
+using Zenvoyce.Application.Features.Invoices.Queries.GetSalesReport;
 
 namespace Zenvoyce.API.Controllers;
 
@@ -20,6 +22,31 @@ public class InvoicesController(ISender mediator) : ControllerBase
     {
         var result = await mediator.Send(command);
         return CreatedAtAction(nameof(GetInvoiceHistory), new { id = result.Id }, result);
+    }
+
+    [HttpPost("api/invoices/{id:guid}/adjust")]
+    public async Task<IActionResult> CreateAdjustmentInvoice(Guid id, [FromBody] CreateInvoiceCommand command)
+    {
+        var result = await mediator.Send(command with { ThamChieuHoadonId = id });
+        return CreatedAtAction(nameof(GetInvoiceHistory), new { id = result.Id }, result);
+    }
+
+    [HttpPost("api/invoices/{id:guid}/send-email")]
+    public async Task<IActionResult> SendInvoiceEmail(Guid id)
+    {
+        var result = await mediator.Send(new SendInvoiceEmailCommand(id));
+        return Ok(result);
+    }
+
+    [HttpGet("api/invoices/reports/sales")]
+    public async Task<IActionResult> GetSalesReport(
+        [FromQuery] Guid? donviId,
+        [FromQuery] Guid? khachhangId,
+        [FromQuery] DateTime? tuNgay,
+        [FromQuery] DateTime? denNgay)
+    {
+        var result = await mediator.Send(new GetSalesReportQuery(donviId, khachhangId, tuNgay, denNgay));
+        return Ok(result);
     }
 
     [HttpPost("api/invoices/{id:guid}/forward")]

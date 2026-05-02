@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Zenvoyce.Application.Features.Roles.Commands.AssignPermissions;
 using Zenvoyce.Application.Features.Roles.Commands.CreateRole;
 using Zenvoyce.Application.Features.Roles.DTOs;
+using Zenvoyce.Application.Features.Roles.Queries.GetAssignedMenuIds;
 using Zenvoyce.Application.Features.Roles.Queries.GetRoles;
 
 namespace Zenvoyce.API.Controllers;
@@ -25,6 +26,13 @@ public class RolesController(ISender mediator) : ControllerBase
     {
         var result = await mediator.Send(command);
         return CreatedAtAction(nameof(GetRoles), new { id = result.Id }, result);
+    }
+
+    [HttpGet("{roleId:guid}/users/{userId:guid}/assigned-menu-ids")]
+    public async Task<IActionResult> GetAssignedMenuIds(Guid roleId, Guid userId)
+    {
+        var result = await mediator.Send(new GetAssignedMenuIdsQuery(roleId, userId));
+        return Ok(result);
     }
 
     [HttpPut("{id:guid}/assign-permissions")]

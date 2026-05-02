@@ -33,6 +33,17 @@ public class UserRepository(ZenvoyceDbContext dbContext) : IUserRepository
             cancellationToken);
     }
 
+    public Task<bool> EmailExistsAsync(string email, Guid? excludingId, CancellationToken cancellationToken)
+    {
+        var normalized = email.Trim().ToLowerInvariant();
+        return dbContext.Nguoidungs.AnyAsync(
+            x => x.Email != null
+                && x.Email.ToLower() == normalized
+                && x.IsDeleted != true
+                && (!excludingId.HasValue || x.Id != excludingId.Value),
+            cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<DomainUser>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
         var normalizedPage = pageNumber < 1 ? 1 : pageNumber;
