@@ -1,11 +1,14 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Microsoft.IdentityModel.Tokens;
 using Zenvoyce.Application;
+using Zenvoyce.Application.Common.Models;
 using Zenvoyce.Infrastructure;
 using Zenvoyce.Infrastructure.Security;
 using Zenvoyce.API.Middlewares;
+using Zenvoyce.API.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,14 +42,45 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = jwtOptions.Issuer,
             ValidAudience = jwtOptions.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.FromMinutes(2)
         };
+
+        if (builder.Environment.IsDevelopment())
+        {
+            options.IncludeErrorDetails = true;
+            options.Events = new JwtBearerEvents
+            {
+                OnAuthenticationFailed = context =>
+                {
+                    var lf = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
+                    lf?.CreateLogger("JwtBearer").LogWarning(context.Exception, "Xác thực JWT thất bại");
+                    return Task.CompletedTask;
+                }
+            };
+        }
     });
 
 // ==========================================
 // 3. CẤU HÌNH API & DOCUMENTATION (.NET 9)
 // ==========================================
-builder.Services.AddControllers();
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(e => e.Value?.Errors.Count > 0)
+            .ToDictionary(
+                e => e.Key,
+                e => e.Value!.Errors.Select(x => x.ErrorMessage).ToArray());
+        return new BadRequestObjectResult(ApiResponse<object?>.Fail("Dữ liệu không hợp lệ.", errors));
+    };
+});
+
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -55,6 +89,8 @@ builder.Services.AddSwaggerGen(options =>
         Title = "Zenvoyce API",
         Version = "v1"
     });
+
+    options.CustomSchemaIds(SwaggerSchemaIds.For);
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -80,6 +116,7 @@ builder.Services.AddSwaggerGen(options =>
             []
         }
     });
+
 });
 
 var app = builder.Build();

@@ -1,12 +1,14 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Zenvoyce.Application.Common.Models;
 using Zenvoyce.Application.Features.Invoices.Commands.CancelInvoice;
 using Zenvoyce.Application.Features.Invoices.Commands.CreateInvoice;
 using Zenvoyce.Application.Features.Invoices.Commands.ForwardInvoice;
 using Zenvoyce.Application.Features.Invoices.Commands.PublishInvoice;
 using Zenvoyce.Application.Features.Invoices.Commands.SignInvoice;
 using Zenvoyce.Application.Features.Invoices.Commands.SendInvoiceEmail;
+using Zenvoyce.Application.Features.Invoices.DTOs;
 using Zenvoyce.Application.Features.Invoices.Queries.GetInvoiceHistory;
 using Zenvoyce.Application.Features.Invoices.Queries.GetInvoices;
 using Zenvoyce.Application.Features.Invoices.Queries.GetSalesReport;
@@ -18,81 +20,81 @@ namespace Zenvoyce.API.Controllers;
 public class InvoicesController(ISender mediator) : ControllerBase
 {
     [HttpPost("api/invoices")]
-    public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceCommand command)
+    public async Task<ActionResult<ApiResponse<CreateInvoiceResultDto>>> CreateInvoice([FromBody] CreateInvoiceCommand command)
     {
         var result = await mediator.Send(command);
-        return CreatedAtAction(nameof(GetInvoiceHistory), new { id = result.Id }, result);
+        return CreatedAtAction(nameof(GetInvoiceHistory), new { id = result.Id }, ApiResponse<CreateInvoiceResultDto>.Ok(result));
     }
 
     [HttpPost("api/invoices/{id:guid}/adjust")]
-    public async Task<IActionResult> CreateAdjustmentInvoice(Guid id, [FromBody] CreateInvoiceCommand command)
+    public async Task<ActionResult<ApiResponse<CreateInvoiceResultDto>>> CreateAdjustmentInvoice(Guid id, [FromBody] CreateInvoiceCommand command)
     {
         var result = await mediator.Send(command with { ThamChieuHoadonId = id });
-        return CreatedAtAction(nameof(GetInvoiceHistory), new { id = result.Id }, result);
+        return CreatedAtAction(nameof(GetInvoiceHistory), new { id = result.Id }, ApiResponse<CreateInvoiceResultDto>.Ok(result));
     }
 
     [HttpPost("api/invoices/{id:guid}/send-email")]
-    public async Task<IActionResult> SendInvoiceEmail(Guid id)
+    public async Task<ActionResult<ApiResponse<SendInvoiceEmailResultDto>>> SendInvoiceEmail(Guid id)
     {
         var result = await mediator.Send(new SendInvoiceEmailCommand(id));
-        return Ok(result);
+        return Ok(ApiResponse<SendInvoiceEmailResultDto>.Ok(result));
     }
 
     [HttpGet("api/invoices/reports/sales")]
-    public async Task<IActionResult> GetSalesReport(
+    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<SalesReportRow>>>> GetSalesReport(
         [FromQuery] Guid? donviId,
         [FromQuery] Guid? khachhangId,
         [FromQuery] DateTime? tuNgay,
         [FromQuery] DateTime? denNgay)
     {
         var result = await mediator.Send(new GetSalesReportQuery(donviId, khachhangId, tuNgay, denNgay));
-        return Ok(result);
+        return Ok(ApiResponse<IReadOnlyCollection<SalesReportRow>>.Ok(result));
     }
 
     [HttpPost("api/invoices/{id:guid}/forward")]
-    public async Task<IActionResult> ForwardInvoice(Guid id)
+    public async Task<ActionResult<ApiResponse<StringMessageDto>>> ForwardInvoice(Guid id)
     {
         await mediator.Send(new ForwardInvoiceCommand(id));
-        return Ok(new { Message = "Đã gửi hóa đơn chờ ký." });
+        return Ok(ApiResponse<StringMessageDto>.Ok(new StringMessageDto("Đã gửi hóa đơn chờ ký.")));
     }
 
     [HttpPost("api/invoices/{id:guid}/sign")]
-    public async Task<IActionResult> SignInvoice(Guid id)
+    public async Task<ActionResult<ApiResponse<SignInvoiceResultDto>>> SignInvoice(Guid id)
     {
         var result = await mediator.Send(new SignInvoiceCommand(id));
-        return Ok(result);
+        return Ok(ApiResponse<SignInvoiceResultDto>.Ok(result));
     }
 
     [HttpPost("api/invoices/{id:guid}/publish")]
-    public async Task<IActionResult> PublishInvoice(Guid id)
+    public async Task<ActionResult<ApiResponse<PublishInvoiceResultDto>>> PublishInvoice(Guid id)
     {
         var result = await mediator.Send(new PublishInvoiceCommand(id));
-        return Ok(result);
+        return Ok(ApiResponse<PublishInvoiceResultDto>.Ok(result));
     }
 
     [HttpPost("api/invoices/{id:guid}/cancel")]
-    public async Task<IActionResult> CancelInvoice(Guid id, [FromBody] CancelInvoiceRequest request)
+    public async Task<ActionResult<ApiResponse<StringMessageDto>>> CancelInvoice(Guid id, [FromBody] CancelInvoiceRequest request)
     {
         await mediator.Send(new CancelInvoiceCommand(id, request.LyDo));
-        return Ok(new { Message = "Hóa đơn đã được hủy." });
+        return Ok(ApiResponse<StringMessageDto>.Ok(new StringMessageDto("Hóa đơn đã được hủy.")));
     }
 
     [HttpGet("api/invoices")]
-    public async Task<IActionResult> GetInvoices(
+    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<InvoiceListItemDto>>>> GetInvoices(
         [FromQuery] Guid? khachhangId,
         [FromQuery] string? trangthai,
         [FromQuery] DateTime? tuNgay,
         [FromQuery] DateTime? denNgay)
     {
         var result = await mediator.Send(new GetInvoicesQuery(khachhangId, trangthai, tuNgay, denNgay));
-        return Ok(result);
+        return Ok(ApiResponse<IReadOnlyCollection<InvoiceListItemDto>>.Ok(result));
     }
 
     [HttpGet("api/invoices/{id:guid}/history")]
-    public async Task<IActionResult> GetInvoiceHistory(Guid id)
+    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<InvoiceHistoryItemDto>>>> GetInvoiceHistory(Guid id)
     {
         var result = await mediator.Send(new GetInvoiceHistoryQuery(id));
-        return Ok(result);
+        return Ok(ApiResponse<IReadOnlyCollection<InvoiceHistoryItemDto>>.Ok(result));
     }
 }
 

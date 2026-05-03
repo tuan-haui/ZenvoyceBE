@@ -1,11 +1,19 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentValidation;
+using Zenvoyce.Application.Common.Models;
 
 namespace Zenvoyce.API.Middlewares;
 
 public class ExceptionHandlingMiddleware(RequestDelegate next)
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     public async Task Invoke(HttpContext context)
     {
         try
@@ -32,7 +40,17 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)statusCode;
 
-        var response = JsonSerializer.Serialize(new { message = exception.Message });
+        ApiResponse<object?> envelope = exception switch
+        {
+            ValidationException vex => ApiResponses.Fail(
+                "Dữ liệu không hợp lệ.",
+                vex.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray())),
+            _ => ApiResponses.Fail(exception.Message)
+        };
+
+        var response = JsonSerializer.Serialize(envelope, JsonOptions);
         return context.Response.WriteAsync(response);
     }
 }

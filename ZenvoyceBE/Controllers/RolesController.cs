@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Zenvoyce.Application.Common.Models;
 using Zenvoyce.Application.Features.Roles.Commands.AssignPermissions;
 using Zenvoyce.Application.Features.Roles.Commands.CreateRole;
 using Zenvoyce.Application.Features.Roles.DTOs;
@@ -15,35 +16,35 @@ namespace Zenvoyce.API.Controllers;
 public class RolesController(ISender mediator) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetRoles()
+    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<RoleDto>>>> GetRoles()
     {
         var result = await mediator.Send(new GetRolesQuery());
-        return Ok(result);
+        return Ok(ApiResponse<IReadOnlyCollection<RoleDto>>.Ok(result));
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateRole([FromBody] CreateRoleCommand command)
+    public async Task<ActionResult<ApiResponse<RoleDto>>> CreateRole([FromBody] CreateRoleCommand command)
     {
         var result = await mediator.Send(command);
-        return CreatedAtAction(nameof(GetRoles), new { id = result.Id }, result);
+        return CreatedAtAction(nameof(GetRoles), new { id = result.Id }, ApiResponse<RoleDto>.Ok(result));
     }
 
     [HttpGet("{roleId:guid}/users/{userId:guid}/assigned-menu-ids")]
-    public async Task<IActionResult> GetAssignedMenuIds(Guid roleId, Guid userId)
+    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<Guid>>>> GetAssignedMenuIds(Guid roleId, Guid userId)
     {
         var result = await mediator.Send(new GetAssignedMenuIdsQuery(roleId, userId));
-        return Ok(result);
+        return Ok(ApiResponse<IReadOnlyCollection<Guid>>.Ok(result));
     }
 
     [HttpPut("{id:guid}/assign-permissions")]
-    public async Task<IActionResult> AssignPermissions(Guid id, [FromBody] AssignPermissionsRequestDto payload)
+    public async Task<ActionResult<ApiResponse<object?>>> AssignPermissions(Guid id, [FromBody] AssignPermissionsRequestDto payload)
     {
         if (payload.RoleId != Guid.Empty && payload.RoleId != id)
         {
-            return BadRequest(new { message = "RoleId trong body không khớp với route id." });
+            return BadRequest(ApiResponse<object?>.Fail("RoleId trong body không khớp với route id."));
         }
 
         await mediator.Send(new AssignPermissionsCommand(id, payload.UserId, payload.MenuIds));
-        return Ok();
+        return Ok(ApiResponse<object?>.Ok(null));
     }
 }

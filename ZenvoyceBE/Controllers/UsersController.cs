@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Zenvoyce.Application.Common.Models;
+using Zenvoyce.Application.Features.Users.DTOs;
 using Zenvoyce.Application.Features.Users.Commands.ChangePassword;
 using Zenvoyce.Application.Features.Users.Commands.CreateUser;
 using Zenvoyce.Application.Features.Users.Commands.DeleteUser;
@@ -16,44 +18,46 @@ namespace Zenvoyce.API.Controllers;
 public class UsersController(ISender mediator) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetUsers([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<ApiResponse<PagedResult<UserDto>>>> GetUsers(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
         var result = await mediator.Send(new GetUsersQuery(pageNumber, pageSize));
-        return Ok(result);
+        return Ok(ApiResponse<PagedResult<UserDto>>.Ok(result));
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetUserById(Guid id)
+    public async Task<ActionResult<ApiResponse<UserDto>>> GetUserById(Guid id)
     {
         var result = await mediator.Send(new GetUserByIdQuery(id));
-        return Ok(result);
+        return Ok(ApiResponse<UserDto>.Ok(result));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateUserCommand command)
+    public async Task<ActionResult<ApiResponse<UserDto>>> Create([FromBody] CreateUserCommand command)
     {
         var result = await mediator.Send(command);
-        return CreatedAtAction(nameof(GetUserById), new { id = result.Id }, result);
+        return CreatedAtAction(nameof(GetUserById), new { id = result.Id }, ApiResponse<UserDto>.Ok(result));
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserCommand command)
+    public async Task<ActionResult<ApiResponse<UserDto>>> Update(Guid id, [FromBody] UpdateUserCommand command)
     {
         var result = await mediator.Send(command with { Id = id });
-        return Ok(result);
+        return Ok(ApiResponse<UserDto>.Ok(result));
     }
 
     [HttpPatch("{id:guid}/change-password")]
-    public async Task<IActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordCommand command)
+    public async Task<ActionResult<ApiResponse<object?>>> ChangePassword(Guid id, [FromBody] ChangePasswordCommand command)
     {
         await mediator.Send(command with { Id = id });
-        return Ok();
+        return Ok(ApiResponse<object?>.Ok(null));
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<ActionResult<ApiResponse<object?>>> Delete(Guid id)
     {
         await mediator.Send(new DeleteUserCommand(id));
-        return Ok();
+        return Ok(ApiResponse<object?>.Ok(null));
     }
 }
