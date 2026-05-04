@@ -124,11 +124,11 @@ var app = builder.Build();
 // ==========================================
 // 4. CẤU HÌNH MIDDLEWARE (PIPELINE)
 // ==========================================
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors("FrontendPolicy");
