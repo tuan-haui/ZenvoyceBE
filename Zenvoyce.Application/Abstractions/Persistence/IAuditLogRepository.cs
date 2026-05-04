@@ -5,7 +5,7 @@ namespace Zenvoyce.Application.Abstractions.Persistence;
 
 public interface IAuditLogRepository
 {
-    Task AddSystemActivityAsync(Guid? userId, string action, CancellationToken cancellationToken);
+    Task AddSystemActivityAsync(Guid? userId, string action, CancellationToken cancellationToken, string? detail = null);
 
     Task<PagedResult<AuditLogDto>> GetPagedAsync(
         DateTime? fromDate,

@@ -2,6 +2,7 @@ using AutoMapper;
 using FluentValidation;
 using MediatR;
 using Zenvoyce.Application.Abstractions.Persistence;
+using Zenvoyce.Application.Common.Audit;
 using Zenvoyce.Application.Features.Auth.DTOs;
 using Zenvoyce.Application.Features.Users.DTOs;
 using Zenvoyce.Domain.Interfaces;
@@ -46,7 +47,9 @@ public class LoginCommandHandler(
         var roleIds = await userPermissionRepository.GetRoleIdsByUserIdAsync(user.Id, cancellationToken);
         var token = jwtTokenService.GenerateToken(user.Id, roleIds, expiredAt);
 
-        await auditLogRepository.AddSystemActivityAsync(user.Id, "Đăng nhập", cancellationToken);
+        var loginDetail = CommandAuditDetailFormatter.Format(request);
+        await auditLogRepository.AddSystemActivityAsync(user.Id, "Đăng nhập", cancellationToken, loginDetail);
+
 
         return new LoginResponseDto
         {

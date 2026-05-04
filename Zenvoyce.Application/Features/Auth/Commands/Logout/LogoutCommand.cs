@@ -12,7 +12,9 @@ public class LogoutCommandHandler(
 {
     public async Task<Unit> Handle(LogoutCommand request, CancellationToken cancellationToken)
     {
-        await auditLogRepository.AddSystemActivityAsync(currentUser.UserId, "Đăng xuất", cancellationToken);
+        var detail = currentUser.UserId is { } uid ? $"UserId={uid:D}" : null;
+        await auditLogRepository.AddSystemActivityAsync(currentUser.UserId, "Đăng xuất", cancellationToken, detail);
+
         return Unit.Value;
     }
 }

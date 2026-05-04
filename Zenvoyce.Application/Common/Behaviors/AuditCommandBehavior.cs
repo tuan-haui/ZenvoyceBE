@@ -1,5 +1,6 @@
 using MediatR;
 using Zenvoyce.Application.Abstractions.Persistence;
+using Zenvoyce.Application.Common.Audit;
 using Zenvoyce.Application.Features.Auth.Commands.Login;
 using Zenvoyce.Application.Features.Auth.Commands.Logout;
 using Zenvoyce.Domain.Interfaces;
@@ -36,7 +37,8 @@ public class AuditCommandBehavior<TRequest, TResponse>(
         if (action.Length > 255)
             action = action[..255];
 
-        await auditLogRepository.AddSystemActivityAsync(currentUser.UserId, action, cancellationToken);
+        var detail = CommandAuditDetailFormatter.Format(request);
+        await auditLogRepository.AddSystemActivityAsync(currentUser.UserId, action, cancellationToken, detail);
 
         return response;
     }
