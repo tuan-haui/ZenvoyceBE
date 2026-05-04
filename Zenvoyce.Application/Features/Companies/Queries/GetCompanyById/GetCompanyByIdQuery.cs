@@ -13,14 +13,6 @@ public class GetCompanyByIdQueryHandler(ICompanyRepository companyRepository) : 
         var company = await companyRepository.GetByIdAsync(request.Id, cancellationToken)
             ?? throw new KeyNotFoundException("Không tìm thấy công ty.");
 
-        return new CompanyDto
-        {
-            Id = company.Id,
-            Masothue = company.Masothue,
-            Tendonvi = company.Tendonvi,
-            Diachi = company.Diachi,
-            Dienthoai = company.Dienthoai,
-            Trangthai = company.Trangthai
-        };
+        return CompanyDto.FromDomain(company);
     }
 }

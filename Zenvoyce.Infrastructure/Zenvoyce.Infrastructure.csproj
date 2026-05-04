@@ -12,6 +12,7 @@
     <Compile Remove="EntitiesV2\**" />
     <Compile Remove="EntitiesV3\**" />
     <Compile Remove="EntitiesV4\**" />
+    <Compile Remove="EntitiesV5\**" />
     <Compile Remove="Entities_Backup\**" />
     <Compile Remove="Entities_V2\**" />
     <EmbeddedResource Remove="EntitiesNew\**" />
@@ -19,6 +20,7 @@
     <EmbeddedResource Remove="EntitiesV2\**" />
     <EmbeddedResource Remove="EntitiesV3\**" />
     <EmbeddedResource Remove="EntitiesV4\**" />
+    <EmbeddedResource Remove="EntitiesV5\**" />
     <EmbeddedResource Remove="Entities_Backup\**" />
     <EmbeddedResource Remove="Entities_V2\**" />
     <None Remove="EntitiesNew\**" />
@@ -26,6 +28,7 @@
     <None Remove="EntitiesV2\**" />
     <None Remove="EntitiesV3\**" />
     <None Remove="EntitiesV4\**" />
+    <None Remove="EntitiesV5\**" />
     <None Remove="Entities_Backup\**" />
     <None Remove="Entities_V2\**" />
   </ItemGroup>

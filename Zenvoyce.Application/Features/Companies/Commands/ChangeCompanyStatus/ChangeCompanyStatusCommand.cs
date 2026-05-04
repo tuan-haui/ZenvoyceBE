@@ -33,14 +33,6 @@ public class ChangeCompanyStatusCommandHandler(
 
         await companyRepository.UpdateAsync(company, cancellationToken);
 
-        return new CompanyDto
-        {
-            Id = company.Id,
-            Masothue = company.Masothue,
-            Tendonvi = company.Tendonvi,
-            Diachi = company.Diachi,
-            Dienthoai = company.Dienthoai,
-            Trangthai = company.Trangthai
-        };
+        return CompanyDto.FromDomain(company);
     }
 }

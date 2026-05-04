@@ -12,14 +12,6 @@ public class GetCompaniesQueryHandler(ICompanyRepository companyRepository)
     public async Task<IReadOnlyCollection<CompanyDto>> Handle(GetCompaniesQuery request, CancellationToken cancellationToken)
     {
         var companies = await companyRepository.GetAllAsync(cancellationToken);
-        return companies.Select(x => new CompanyDto
-        {
-            Id = x.Id,
-            Masothue = x.Masothue,
-            Tendonvi = x.Tendonvi,
-            Diachi = x.Diachi,
-            Dienthoai = x.Dienthoai,
-            Trangthai = x.Trangthai
-        }).ToArray();
+        return companies.Select(CompanyDto.FromDomain).ToArray();
     }
 }

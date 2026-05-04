@@ -11,7 +11,11 @@ public record UpdateCompanyCommand(
     string Masothue,
     string Tendonvi,
     string? Diachi,
-    string? Dienthoai) : IRequest<CompanyDto>;
+    string? Dienthoai,
+    string? Nguoidaidien,
+    string? Emailcongty,
+    int? BankId,
+    string? BankAccount) : IRequest<CompanyDto>;
 
 public class UpdateCompanyCommandValidator : AbstractValidator<UpdateCompanyCommand>
 {
@@ -24,6 +28,9 @@ public class UpdateCompanyCommandValidator : AbstractValidator<UpdateCompanyComm
         RuleFor(x => x.Tendonvi).NotEmpty().MaximumLength(255);
         RuleFor(x => x.Diachi).MaximumLength(500);
         RuleFor(x => x.Dienthoai).MaximumLength(20);
+        RuleFor(x => x.Nguoidaidien).MaximumLength(100);
+        RuleFor(x => x.Emailcongty).MaximumLength(100).EmailAddress().When(x => !string.IsNullOrWhiteSpace(x.Emailcongty));
+        RuleFor(x => x.BankAccount).MaximumLength(50);
     }
 }
 
@@ -54,19 +61,15 @@ public class UpdateCompanyCommandHandler(
         company.Tendonvi = normalizedName;
         company.Diachi = request.Diachi?.Trim();
         company.Dienthoai = request.Dienthoai?.Trim();
+        company.Nguoidaidien = request.Nguoidaidien?.Trim();
+        company.Emailcongty = string.IsNullOrWhiteSpace(request.Emailcongty) ? null : request.Emailcongty.Trim();
+        company.BankId = request.BankId;
+        company.BankAccount = string.IsNullOrWhiteSpace(request.BankAccount) ? null : request.BankAccount.Trim();
         company.UpdatedAt = dateTimeProvider.UtcNow;
         company.UpdatedBy = currentUserService.UserId;
 
         await companyRepository.UpdateAsync(company, cancellationToken);
 
-        return new CompanyDto
-        {
-            Id = company.Id,
-            Masothue = company.Masothue,
-            Tendonvi = company.Tendonvi,
-            Diachi = company.Diachi,
-            Dienthoai = company.Dienthoai,
-            Trangthai = company.Trangthai
-        };
+        return CompanyDto.FromDomain(company);
     }
 }

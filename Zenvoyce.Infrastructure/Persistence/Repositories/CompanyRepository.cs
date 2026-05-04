@@ -47,6 +47,10 @@ public class CompanyRepository(ZenvoyceDbContext dbContext) : ICompanyRepository
             Tendonvi = company.Tendonvi,
             Diachi = company.Diachi,
             Dienthoai = company.Dienthoai,
+            Nguoidaidien = company.Nguoidaidien,
+            Emailcongty = company.Emailcongty,
+            BankId = company.BankId,
+            BankAccount = company.BankAccount,
             CreatedAt = company.CreatedAt,
             UpdatedAt = company.UpdatedAt,
             CreatedBy = company.CreatedBy,
@@ -68,6 +72,10 @@ public class CompanyRepository(ZenvoyceDbContext dbContext) : ICompanyRepository
         entity.Tendonvi = company.Tendonvi;
         entity.Diachi = company.Diachi;
         entity.Dienthoai = company.Dienthoai;
+        entity.Nguoidaidien = company.Nguoidaidien;
+        entity.Emailcongty = company.Emailcongty;
+        entity.BankId = company.BankId;
+        entity.BankAccount = company.BankAccount;
         entity.Trangthai = company.Trangthai;
         entity.UpdatedAt = company.UpdatedAt;
         entity.UpdatedBy = company.UpdatedBy;
@@ -85,6 +93,10 @@ public class CompanyRepository(ZenvoyceDbContext dbContext) : ICompanyRepository
             Tendonvi = entity.Tendonvi,
             Diachi = entity.Diachi,
             Dienthoai = entity.Dienthoai,
+            Nguoidaidien = entity.Nguoidaidien,
+            Emailcongty = entity.Emailcongty,
+            BankId = entity.BankId,
+            BankAccount = entity.BankAccount,
             Trangthai = entity.Trangthai ?? 1,
             CreatedAt = entity.CreatedAt ?? DateTime.MinValue,
             UpdatedAt = entity.UpdatedAt ?? DateTime.MinValue,

@@ -7,7 +7,15 @@ using Zenvoyce.Domain.Interfaces;
 
 namespace Zenvoyce.Application.Features.Companies.Commands.CreateCompany;
 
-public record CreateCompanyCommand(string Masothue, string Tendonvi, string? Diachi, string? Dienthoai) : IRequest<CompanyDto>;
+public record CreateCompanyCommand(
+    string Masothue,
+    string Tendonvi,
+    string? Diachi,
+    string? Dienthoai,
+    string? Nguoidaidien,
+    string? Emailcongty,
+    int? BankId,
+    string? BankAccount) : IRequest<CompanyDto>;
 
 public class CreateCompanyCommandValidator : AbstractValidator<CreateCompanyCommand>
 {
@@ -19,6 +27,9 @@ public class CreateCompanyCommandValidator : AbstractValidator<CreateCompanyComm
         RuleFor(x => x.Tendonvi).NotEmpty().MaximumLength(255);
         RuleFor(x => x.Diachi).MaximumLength(500);
         RuleFor(x => x.Dienthoai).MaximumLength(20);
+        RuleFor(x => x.Nguoidaidien).MaximumLength(100);
+        RuleFor(x => x.Emailcongty).MaximumLength(100).EmailAddress().When(x => !string.IsNullOrWhiteSpace(x.Emailcongty));
+        RuleFor(x => x.BankAccount).MaximumLength(50);
     }
 }
 
@@ -43,6 +54,10 @@ public class CreateCompanyCommandHandler(
             Tendonvi = request.Tendonvi.Trim(),
             Diachi = request.Diachi?.Trim(),
             Dienthoai = request.Dienthoai?.Trim(),
+            Nguoidaidien = request.Nguoidaidien?.Trim(),
+            Emailcongty = string.IsNullOrWhiteSpace(request.Emailcongty) ? null : request.Emailcongty.Trim(),
+            BankId = request.BankId,
+            BankAccount = string.IsNullOrWhiteSpace(request.BankAccount) ? null : request.BankAccount.Trim(),
             Trangthai = 1,
             CreatedAt = now,
             UpdatedAt = now,
@@ -53,14 +68,6 @@ public class CreateCompanyCommandHandler(
 
         await companyRepository.AddAsync(company, cancellationToken);
 
-        return new CompanyDto
-        {
-            Id = company.Id,
-            Masothue = company.Masothue,
-            Tendonvi = company.Tendonvi,
-            Diachi = company.Diachi,
-            Dienthoai = company.Dienthoai,
-            Trangthai = company.Trangthai
-        };
+        return CompanyDto.FromDomain(company);
     }
 }

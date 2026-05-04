@@ -46,8 +46,13 @@ public partial class ZenvoyceDbContext : DbContext
     public virtual DbSet<Ttkhachhang> Ttkhachhangs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=ep-lively-shape-aoidkfnj-pooler.c-2.ap-southeast-1.aws.neon.tech;Port=5432;Database=neondb;Username=neondb_owner;Password=npg_H6yWkpeKF5nZ;");
+    {
+        // Ưu tiên cấu hình từ DI (AddDbContext + appsettings/env vars), tránh bị hard-code đè connection.
+        if (!optionsBuilder.IsConfigured)
+        {
+            base.OnConfiguring(optionsBuilder);
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -416,10 +421,6 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
-            entity.Property(e => e.BankAccount)
-                .HasMaxLength(50)
-                .HasColumnName("bank_account");
-            entity.Property(e => e.BankId).HasColumnName("bank_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("created_at");
@@ -430,18 +431,12 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.Dienthoai)
                 .HasMaxLength(20)
                 .HasColumnName("dienthoai");
-            entity.Property(e => e.Emailcongty)
-                .HasMaxLength(100)
-                .HasColumnName("emailcongty");
             entity.Property(e => e.IsDeleted)
                 .HasDefaultValue(false)
                 .HasColumnName("is_deleted");
             entity.Property(e => e.Masothue)
                 .HasMaxLength(20)
                 .HasColumnName("masothue");
-            entity.Property(e => e.Nguoidaidien)
-                .HasMaxLength(100)
-                .HasColumnName("nguoidaidien");
             entity.Property(e => e.Tendonvi)
                 .HasMaxLength(255)
                 .HasColumnName("tendonvi");

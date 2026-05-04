@@ -27,14 +27,6 @@ public partial class Ttcty
 
     public short? Trangthai { get; set; }
 
-    public string? Nguoidaidien { get; set; }
-
-    public string? Emailcongty { get; set; }
-
-    public int? BankId { get; set; }
-
-    public string? BankAccount { get; set; }
-
     public virtual ICollection<Danhmuchanghoa> Danhmuchanghoas { get; set; } = new List<Danhmuchanghoa>();
 
     public virtual ICollection<Mauchocty> Mauchocties { get; set; } = new List<Mauchocty>();
