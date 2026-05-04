@@ -12,7 +12,7 @@ using Zenvoyce.Application.Features.Companies.Queries.GetCompanyById;
 namespace Zenvoyce.API.Controllers;
 
 [ApiController]
-[Route("api/companies")]
+[Route("api/[controller]")]
 [Authorize]
 public class CompaniesController(ISender mediator) : ControllerBase
 {

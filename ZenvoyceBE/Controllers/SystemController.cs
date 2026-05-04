@@ -8,8 +8,8 @@ using Zenvoyce.Application.Features.SystemLogs.Queries.GetAuditLogs;
 namespace Zenvoyce.API.Controllers;
 
 [ApiController]
-[Route("api/system")]
 [Authorize]
+[Route("api/[controller]")]
 public class SystemController(ISender mediator) : ControllerBase
 {
     [HttpGet("logs")]
@@ -21,7 +21,8 @@ public class SystemController(ISender mediator) : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20)
     {
-        var result = await mediator.Send(new GetAuditLogsQuery(fromDate, toDate, userId, actionType, pageNumber, pageSize));
+        var result =
+            await mediator.Send(new GetAuditLogsQuery(fromDate, toDate, userId, actionType, pageNumber, pageSize));
         return Ok(ApiResponse<PagedResult<AuditLogDto>>.Ok(result));
     }
 }

@@ -12,30 +12,33 @@ namespace Zenvoyce.API.Controllers;
 
 [ApiController]
 [Authorize]
+[Route("api/[controller]")]
 public class ProductsController(ISender mediator) : ControllerBase
 {
-    [HttpGet("api/companies/{donviId:guid}/products")]
-    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<ProductDto>>>> GetByCompany(Guid donviId, [FromQuery] string? keyword)
+    [HttpGet("{donviId:guid}/products")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<ProductDto>>>> GetByCompany(Guid donviId,
+        [FromQuery] string? keyword)
     {
         var result = await mediator.Send(new GetProductsByCompanyQuery(donviId, keyword));
         return Ok(ApiResponse<IReadOnlyCollection<ProductDto>>.Ok(result));
     }
 
-    [HttpPost("api/products")]
+    [HttpPost]
     public async Task<ActionResult<ApiResponse<ProductDto>>> Create([FromBody] CreateProductCommand command)
     {
         var result = await mediator.Send(command);
-        return CreatedAtAction(nameof(GetByCompany), new { donviId = result.Donviid }, ApiResponse<ProductDto>.Ok(result));
+        return CreatedAtAction(nameof(GetByCompany), new { donviId = result.Donviid },
+            ApiResponse<ProductDto>.Ok(result));
     }
 
-    [HttpPut("api/products/{id:guid}")]
+    [HttpPut("{id:guid}")]
     public async Task<ActionResult<ApiResponse<ProductDto>>> Update(Guid id, [FromBody] UpdateProductCommand command)
     {
         var result = await mediator.Send(command with { Id = id });
         return Ok(ApiResponse<ProductDto>.Ok(result));
     }
 
-    [HttpDelete("api/products/{id:guid}")]
+    [HttpDelete("{id:guid}")]
     public async Task<ActionResult<ApiResponse<object?>>> Delete(Guid id)
     {
         await mediator.Send(new DeleteProductCommand(id));

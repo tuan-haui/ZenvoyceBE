@@ -14,48 +14,54 @@ namespace Zenvoyce.API.Controllers;
 
 [ApiController]
 [Authorize]
+[Route("api/[controller]")]
 public class TemplatesController(ISender mediator) : ControllerBase
 {
-    [HttpGet("api/templates/base")]
+    [HttpGet("base")]
     public async Task<ActionResult<ApiResponse<IReadOnlyCollection<BaseTemplateDto>>>> GetBaseTemplates()
     {
         var result = await mediator.Send(new GetBaseTemplatesQuery());
         return Ok(ApiResponse<IReadOnlyCollection<BaseTemplateDto>>.Ok(result));
     }
 
-    [HttpPost("api/templates/base")]
-    public async Task<ActionResult<ApiResponse<BaseTemplateDto>>> CreateBaseTemplate([FromBody] CreateBaseTemplateCommand command)
+    [HttpPost("base")]
+    public async Task<ActionResult<ApiResponse<BaseTemplateDto>>> CreateBaseTemplate(
+        [FromBody] CreateBaseTemplateCommand command)
     {
         var result = await mediator.Send(command);
-        return CreatedAtAction(nameof(UpdateBaseTemplate), new { id = result.Id }, ApiResponse<BaseTemplateDto>.Ok(result));
+        return CreatedAtAction(nameof(UpdateBaseTemplate), new { id = result.Id },
+            ApiResponse<BaseTemplateDto>.Ok(result));
     }
 
-    [HttpPut("api/templates/base/{id:guid}")]
-    public async Task<ActionResult<ApiResponse<BaseTemplateDto>>> UpdateBaseTemplate(Guid id, [FromBody] UpdateBaseTemplateCommand command)
+    [HttpPut("base/{id:guid}")]
+    public async Task<ActionResult<ApiResponse<BaseTemplateDto>>> UpdateBaseTemplate(Guid id,
+        [FromBody] UpdateBaseTemplateCommand command)
     {
         var result = await mediator.Send(command with { Id = id });
         return Ok(ApiResponse<BaseTemplateDto>.Ok(result));
     }
 
-    [HttpPost("api/templates/company/apply")]
-    public async Task<ActionResult<ApiResponse<CompanyTemplateDto>>> ApplyTemplate([FromBody] ApplyTemplateCommand command)
+    [HttpPost("company/apply")]
+    public async Task<ActionResult<ApiResponse<CompanyTemplateDto>>> ApplyTemplate(
+        [FromBody] ApplyTemplateCommand command)
     {
         var result = await mediator.Send(command);
         return Created("api/templates/company/apply", ApiResponse<CompanyTemplateDto>.Ok(result));
     }
 
-    [HttpGet("api/templates/company")]
+    [HttpGet("company")]
     public async Task<ActionResult<ApiResponse<IReadOnlyCollection<CompanyTemplateDto>>>> GetCompanyTemplates(
         [FromQuery] Guid donviId,
         [FromQuery] string? kyhieuMau,
         [FromQuery] string? loaiHoadon,
         [FromQuery] short? trangthaiPhatHanh)
     {
-        var result = await mediator.Send(new GetCompanyTemplatesQuery(donviId, kyhieuMau, loaiHoadon, trangthaiPhatHanh));
+        var result =
+            await mediator.Send(new GetCompanyTemplatesQuery(donviId, kyhieuMau, loaiHoadon, trangthaiPhatHanh));
         return Ok(ApiResponse<IReadOnlyCollection<CompanyTemplateDto>>.Ok(result));
     }
 
-    [HttpPost("api/templates/company/{id:guid}/notify-tax")]
+    [HttpPost("notify-tax/{id:guid}")]
     public async Task<ActionResult<ApiResponse<TemplateStatusHistoryDto>>> NotifyTaxAuthority(Guid id)
     {
         var result = await mediator.Send(new NotifyTaxAuthorityCommand(id));

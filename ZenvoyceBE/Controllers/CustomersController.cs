@@ -12,30 +12,31 @@ namespace Zenvoyce.API.Controllers;
 
 [ApiController]
 [Authorize]
+[Route("api/[controller]")]
 public class CustomersController(ISender mediator) : ControllerBase
 {
-    [HttpGet("api/companies/{donviId:guid}/customers")]
+    [HttpGet("getCustomerByCompany/{donviId:guid}")]
     public async Task<ActionResult<ApiResponse<IReadOnlyCollection<CustomerDto>>>> GetByCompany(Guid donviId, [FromQuery] string? keyword)
     {
         var result = await mediator.Send(new GetCustomersByCompanyQuery(donviId, keyword));
         return Ok(ApiResponse<IReadOnlyCollection<CustomerDto>>.Ok(result));
     }
 
-    [HttpPost("api/customers")]
+    [HttpPost]
     public async Task<ActionResult<ApiResponse<CustomerDto>>> Create([FromBody] CreateCustomerCommand command)
     {
         var result = await mediator.Send(command);
         return CreatedAtAction(nameof(GetByCompany), new { donviId = result.Donviid }, ApiResponse<CustomerDto>.Ok(result));
     }
 
-    [HttpPut("api/customers/{id:guid}")]
+    [HttpPut("{id:guid}")]
     public async Task<ActionResult<ApiResponse<CustomerDto>>> Update(Guid id, [FromBody] UpdateCustomerCommand command)
     {
         var result = await mediator.Send(command with { Id = id });
         return Ok(ApiResponse<CustomerDto>.Ok(result));
     }
 
-    [HttpDelete("api/customers/{id:guid}")]
+    [HttpDelete("{id:guid}")]
     public async Task<ActionResult<ApiResponse<object?>>> Delete(Guid id)
     {
         await mediator.Send(new DeleteCustomerCommand(id));

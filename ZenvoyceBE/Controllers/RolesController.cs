@@ -11,8 +11,8 @@ using Zenvoyce.Application.Features.Roles.Queries.GetRoles;
 namespace Zenvoyce.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
 [Authorize]
+[Route("api/[controller]")]
 public class RolesController(ISender mediator) : ControllerBase
 {
     [HttpGet]
@@ -37,7 +37,8 @@ public class RolesController(ISender mediator) : ControllerBase
     }
 
     [HttpPut("{id:guid}/assign-permissions")]
-    public async Task<ActionResult<ApiResponse<object?>>> AssignPermissions(Guid id, [FromBody] AssignPermissionsRequestDto payload)
+    public async Task<ActionResult<ApiResponse<object?>>> AssignPermissions(Guid id,
+        [FromBody] AssignPermissionsRequestDto payload)
     {
         if (payload.RoleId != Guid.Empty && payload.RoleId != id)
         {
