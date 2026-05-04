@@ -25,6 +25,7 @@ public class LoginCommandHandler(
     IPasswordHasher passwordHasher,
     IJwtTokenService jwtTokenService,
     IDateTimeProvider dateTimeProvider,
+    IAuditLogRepository auditLogRepository,
     IMapper mapper) : IRequestHandler<LoginCommand, LoginResponseDto>
 {
     public async Task<LoginResponseDto> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -44,6 +45,8 @@ public class LoginCommandHandler(
         var expiredAt = now.AddMinutes(120);
         var roleIds = await userPermissionRepository.GetRoleIdsByUserIdAsync(user.Id, cancellationToken);
         var token = jwtTokenService.GenerateToken(user.Id, roleIds, expiredAt);
+
+        await auditLogRepository.AddSystemActivityAsync(user.Id, "Đăng nhập", cancellationToken);
 
         return new LoginResponseDto
         {

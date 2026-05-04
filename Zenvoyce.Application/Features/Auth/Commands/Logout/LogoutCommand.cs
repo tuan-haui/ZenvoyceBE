@@ -1,13 +1,18 @@
 using MediatR;
+using Zenvoyce.Application.Abstractions.Persistence;
+using Zenvoyce.Domain.Interfaces;
 
 namespace Zenvoyce.Application.Features.Auth.Commands.Logout;
 
 public record LogoutCommand : IRequest<Unit>;
 
-public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Unit>
+public class LogoutCommandHandler(
+    ICurrentUserService currentUser,
+    IAuditLogRepository auditLogRepository) : IRequestHandler<LogoutCommand, Unit>
 {
-    public Task<Unit> Handle(LogoutCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(LogoutCommand request, CancellationToken cancellationToken)
     {
-        return Task.FromResult(Unit.Value);
+        await auditLogRepository.AddSystemActivityAsync(currentUser.UserId, "Đăng xuất", cancellationToken);
+        return Unit.Value;
     }
 }

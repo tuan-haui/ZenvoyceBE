@@ -2,12 +2,27 @@ using Microsoft.EntityFrameworkCore;
 using Zenvoyce.Application.Abstractions.Persistence;
 using Zenvoyce.Application.Common.Models;
 using Zenvoyce.Application.Features.SystemLogs.DTOs;
+using Zenvoyce.Infrastructure.Entities;
 using ZenvoyceDbContext = Zenvoyce.Infrastructure.Entities.ZenvoyceDbContext;
 
 namespace Zenvoyce.Infrastructure.Persistence.Repositories;
 
 public class AuditLogRepository(ZenvoyceDbContext dbContext) : IAuditLogRepository
 {
+    public async Task AddSystemActivityAsync(Guid? userId, string action, CancellationToken cancellationToken)
+    {
+        var text = action.Length <= 255 ? action : action[..255];
+        dbContext.Lichsuhoadons.Add(new Lichsuhoadon
+        {
+            Id = Guid.NewGuid(),
+            Hoadonid = null,
+            Nguoidungid = userId,
+            Hanhdong = text,
+            Thoigian = DateTime.UtcNow
+        });
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<PagedResult<AuditLogDto>> GetPagedAsync(
         DateTime? fromDate,
         DateTime? toDate,
