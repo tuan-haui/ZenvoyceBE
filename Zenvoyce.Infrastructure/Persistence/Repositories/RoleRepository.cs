@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Zenvoyce.Application.Abstractions.Persistence;
 using Zenvoyce.Domain.Entities;
 using ZenvoyceDbContext = Zenvoyce.Infrastructure.Entities.ZenvoyceDbContext;
@@ -30,8 +31,9 @@ public class RoleRepository(ZenvoyceDbContext dbContext) : IRoleRepository
 
     public Task<bool> NameExistsAsync(string roleName, CancellationToken cancellationToken)
     {
+        var normalizedName = roleName.Trim().ToLower();
         return dbContext.Nhomquyens.AnyAsync(
-            x => x.Tenquyen == roleName && x.IsDeleted != true,
+            x => x.Tenquyen.ToLower() == normalizedName && x.IsDeleted != true,
             cancellationToken);
     }
 
@@ -55,6 +57,13 @@ public class RoleRepository(ZenvoyceDbContext dbContext) : IRoleRepository
         };
 
         dbContext.Nhomquyens.Add(entity);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
+        {
+            throw new InvalidOperationException("Tên quyền đã tồn tại.");
+        }
     }
 }

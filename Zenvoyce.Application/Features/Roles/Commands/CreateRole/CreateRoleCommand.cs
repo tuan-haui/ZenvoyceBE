@@ -13,7 +13,10 @@ public class CreateRoleCommandValidator : AbstractValidator<CreateRoleCommand>
 {
     public CreateRoleCommandValidator()
     {
-        RuleFor(x => x.Tenquyen).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.Tenquyen)
+            .NotEmpty()
+            .Must(x => !string.IsNullOrWhiteSpace(x))
+            .MaximumLength(100);
         RuleFor(x => x.Mota).MaximumLength(255);
     }
 }
@@ -25,7 +28,9 @@ public class CreateRoleCommandHandler(
 {
     public async Task<RoleDto> Handle(CreateRoleCommand request, CancellationToken cancellationToken)
     {
-        if (await roleRepository.NameExistsAsync(request.Tenquyen, cancellationToken))
+        var normalizedName = request.Tenquyen.Trim();
+
+        if (await roleRepository.NameExistsAsync(normalizedName, cancellationToken))
         {
             throw new InvalidOperationException("Tên quyền đã tồn tại.");
         }
@@ -34,7 +39,7 @@ public class CreateRoleCommandHandler(
         var role = new Nhomquyen
         {
             Id = Guid.NewGuid(),
-            Tenquyen = request.Tenquyen.Trim(),
+            Tenquyen = normalizedName,
             Mota = request.Mota?.Trim(),
             CreatedAt = now,
             UpdatedAt = now,

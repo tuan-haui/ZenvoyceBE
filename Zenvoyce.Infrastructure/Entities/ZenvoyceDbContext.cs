@@ -282,6 +282,7 @@ public partial class ZenvoyceDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("nhomquyen_pkey");
 
             entity.ToTable("nhomquyen");
+            entity.HasIndex(e => e.Tenquyen, "nhomquyen_tenquyen_key").IsUnique();
 
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
