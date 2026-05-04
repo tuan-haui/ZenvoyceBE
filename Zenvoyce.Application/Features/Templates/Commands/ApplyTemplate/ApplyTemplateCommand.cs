@@ -61,6 +61,8 @@ public class ApplyTemplateCommandHandler(
             throw new KeyNotFoundException("Không tìm thấy đơn vị áp dụng.");
         }
 
+        var baseTemplate = await templateRepository.GetBaseTemplateByIdAsync(request.Maugocid, cancellationToken);
+
         var now = dateTimeProvider.UtcNow;
         var companyTemplateId = Guid.NewGuid();
         var companyTemplate = new Mauchocty
@@ -99,6 +101,9 @@ public class ApplyTemplateCommandHandler(
             Id = companyTemplate.Id,
             Maugocid = companyTemplate.Maugocid,
             Donviid = companyTemplate.Donviid,
+            Tenmaugoc = baseTemplate?.Tenmau,
+            Kyhieu = baseTemplate?.Kyhieu,
+            Loaihoadon = baseTemplate?.Loaihoadon,
             Css = companyTemplate.Css,
             Header = companyTemplate.Header,
             Trangthaiphathanh = companyTemplate.Trangthaiphathanh,

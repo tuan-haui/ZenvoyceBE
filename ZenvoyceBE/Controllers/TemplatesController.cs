@@ -7,6 +7,7 @@ using Zenvoyce.Application.Features.Templates.Commands.CreateBaseTemplate;
 using Zenvoyce.Application.Features.Templates.Commands.NotifyTaxAuthority;
 using Zenvoyce.Application.Features.Templates.Commands.UpdateBaseTemplate;
 using Zenvoyce.Application.Features.Templates.DTOs;
+using Zenvoyce.Application.Features.Templates.Queries.GetBaseTemplates;
 using Zenvoyce.Application.Features.Templates.Queries.GetCompanyTemplates;
 
 namespace Zenvoyce.API.Controllers;
@@ -15,6 +16,13 @@ namespace Zenvoyce.API.Controllers;
 [Authorize]
 public class TemplatesController(ISender mediator) : ControllerBase
 {
+    [HttpGet("api/templates/base")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<BaseTemplateDto>>>> GetBaseTemplates()
+    {
+        var result = await mediator.Send(new GetBaseTemplatesQuery());
+        return Ok(ApiResponse<IReadOnlyCollection<BaseTemplateDto>>.Ok(result));
+    }
+
     [HttpPost("api/templates/base")]
     public async Task<ActionResult<ApiResponse<BaseTemplateDto>>> CreateBaseTemplate([FromBody] CreateBaseTemplateCommand command)
     {

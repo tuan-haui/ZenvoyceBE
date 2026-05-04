@@ -5,6 +5,7 @@ namespace Zenvoyce.Application.Abstractions.Persistence;
 public interface ITemplateRepository
 {
     Task<bool> BaseTemplateCodeExistsAsync(string kyhieu, Guid? excludingId, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<Mauhoadongoc>> GetBaseTemplatesAsync(CancellationToken cancellationToken);
     Task<Mauhoadongoc?> GetBaseTemplateByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<bool> IsBaseTemplateInUseAsync(Guid baseTemplateId, CancellationToken cancellationToken);
     Task AddBaseTemplateAsync(Mauhoadongoc template, CancellationToken cancellationToken);

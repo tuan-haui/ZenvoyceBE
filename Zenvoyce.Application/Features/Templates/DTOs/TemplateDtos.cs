@@ -22,6 +22,9 @@ public class CompanyTemplateDto
     public Guid Id { get; set; }
     public Guid Maugocid { get; set; }
     public Guid Donviid { get; set; }
+    public string? Tenmaugoc { get; set; }
+    public string? Kyhieu { get; set; }
+    public string? Loaihoadon { get; set; }
     public string? Css { get; set; }
     public string? Header { get; set; }
     public short Trangthaiphathanh { get; set; }

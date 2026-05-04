@@ -14,6 +14,17 @@ public class TemplateRepository(ZenvoyceDbContext dbContext) : ITemplateReposito
             cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<Mauhoadongoc>> GetBaseTemplatesAsync(CancellationToken cancellationToken)
+    {
+        var templates = await dbContext.Mauhoadongocs
+            .AsNoTracking()
+            .Where(x => x.IsDeleted != true)
+            .OrderBy(x => x.Tenmau)
+            .ToListAsync(cancellationToken);
+
+        return templates.Select(MapToDomain).ToArray();
+    }
+
     public async Task<Mauhoadongoc?> GetBaseTemplateByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var template = await dbContext.Mauhoadongocs
