@@ -25,6 +25,10 @@ public partial class Danhmuchanghoa
 
     public bool? IsDeleted { get; set; }
 
+    public string? Sku { get; set; }
+
+    public short? Thuesuat { get; set; }
+
     public virtual Ttcty? Donvi { get; set; }
 
     public virtual ICollection<Tthanghoa> Tthanghoas { get; set; } = new List<Tthanghoa>();

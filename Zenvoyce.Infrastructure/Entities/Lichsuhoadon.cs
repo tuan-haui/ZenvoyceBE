@@ -19,6 +19,8 @@ public partial class Lichsuhoadon
 
     public string? Trangthaimoi { get; set; }
 
+    public string? Chitiethanhdong { get; set; }
+
     public virtual Tthoadon? Hoadon { get; set; }
 
     public virtual Nguoidung? Nguoidung { get; set; }

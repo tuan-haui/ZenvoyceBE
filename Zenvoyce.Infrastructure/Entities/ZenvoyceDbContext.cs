@@ -74,9 +74,13 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.IsDeleted)
                 .HasDefaultValue(false)
                 .HasColumnName("is_deleted");
+            entity.Property(e => e.Sku)
+                .HasMaxLength(20)
+                .HasColumnName("sku");
             entity.Property(e => e.Tenhanghoa)
                 .HasMaxLength(255)
                 .HasColumnName("tenhanghoa");
+            entity.Property(e => e.Thuesuat).HasColumnName("thuesuat");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("updated_at");
@@ -121,6 +125,7 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
+            entity.Property(e => e.Chitiethanhdong).HasColumnName("chitiethanhdong");
             entity.Property(e => e.Hanhdong)
                 .HasMaxLength(255)
                 .HasColumnName("hanhdong");
