@@ -32,6 +32,6 @@ public class MenusController(ISender mediator) : ControllerBase
     public async Task<ActionResult<ApiResponse<MenuDto>>> CreateMenu([FromBody] CreateMenuCommand command)
     {
         var result = await mediator.Send(command);
-        return CreatedAtAction(nameof(GetSidebar), new { id = result.Id }, ApiResponse<MenuDto>.Ok(result));
+        return Ok(ApiResponse<MenuDto>.Ok(result));
     }
 }

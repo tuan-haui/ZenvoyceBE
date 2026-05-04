@@ -24,14 +24,14 @@ public class InvoicesController(ISender mediator) : ControllerBase
     public async Task<ActionResult<ApiResponse<CreateInvoiceResultDto>>> CreateInvoice([FromBody] CreateInvoiceCommand command)
     {
         var result = await mediator.Send(command);
-        return CreatedAtAction(nameof(GetInvoiceHistory), new { id = result.Id }, ApiResponse<CreateInvoiceResultDto>.Ok(result));
+        return Ok(ApiResponse<CreateInvoiceResultDto>.Ok(result));
     }
 
     [HttpPost("{id:guid}/adjust")]
     public async Task<ActionResult<ApiResponse<CreateInvoiceResultDto>>> CreateAdjustmentInvoice(Guid id, [FromBody] CreateInvoiceCommand command)
     {
         var result = await mediator.Send(command with { ThamChieuHoadonId = id });
-        return CreatedAtAction(nameof(GetInvoiceHistory), new { id = result.Id }, ApiResponse<CreateInvoiceResultDto>.Ok(result));
+        return Ok(ApiResponse<CreateInvoiceResultDto>.Ok(result));
     }
 
     [HttpPost("{id:guid}/send-email")]

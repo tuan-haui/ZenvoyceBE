@@ -34,7 +34,7 @@ public class CompaniesController(ISender mediator) : ControllerBase
     public async Task<ActionResult<ApiResponse<CompanyDto>>> Create([FromBody] CreateCompanyCommand command)
     {
         var result = await mediator.Send(command);
-        return CreatedAtAction(nameof(GetCompanyById), new { id = result.Id }, ApiResponse<CompanyDto>.Ok(result));
+        return Ok(ApiResponse<CompanyDto>.Ok(result));
     }
 
     [HttpPut("{id:guid}")]

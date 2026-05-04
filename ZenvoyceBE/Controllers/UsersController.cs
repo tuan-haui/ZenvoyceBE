@@ -37,7 +37,7 @@ public class UsersController(ISender mediator) : ControllerBase
     public async Task<ActionResult<ApiResponse<UserDto>>> Create([FromBody] CreateUserCommand command)
     {
         var result = await mediator.Send(command);
-        return CreatedAtAction(nameof(GetUserById), new { id = result.Id }, ApiResponse<UserDto>.Ok(result));
+        return Ok(ApiResponse<UserDto>.Ok(result));
     }
 
     [HttpPut("{id:guid}")]

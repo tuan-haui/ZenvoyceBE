@@ -27,8 +27,7 @@ public class ProductsController(ISender mediator) : ControllerBase
     public async Task<ActionResult<ApiResponse<ProductDto>>> Create([FromBody] CreateProductCommand command)
     {
         var result = await mediator.Send(command);
-        return CreatedAtAction(nameof(GetByCompany), new { donviId = result.Donviid },
-            ApiResponse<ProductDto>.Ok(result));
+        return Ok(ApiResponse<ProductDto>.Ok(result));
     }
 
     [HttpPut("{id:guid}")]

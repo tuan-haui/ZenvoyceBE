@@ -26,7 +26,7 @@ public class RolesController(ISender mediator) : ControllerBase
     public async Task<ActionResult<ApiResponse<RoleDto>>> CreateRole([FromBody] CreateRoleCommand command)
     {
         var result = await mediator.Send(command);
-        return CreatedAtAction(nameof(GetRoles), new { id = result.Id }, ApiResponse<RoleDto>.Ok(result));
+        return Ok(ApiResponse<RoleDto>.Ok(result));
     }
 
     [HttpGet("{roleId:guid}/users/{userId:guid}/assigned-menu-ids")]

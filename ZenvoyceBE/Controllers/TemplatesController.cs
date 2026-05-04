@@ -29,8 +29,7 @@ public class TemplatesController(ISender mediator) : ControllerBase
         [FromBody] CreateBaseTemplateCommand command)
     {
         var result = await mediator.Send(command);
-        return CreatedAtAction(nameof(UpdateBaseTemplate), new { id = result.Id },
-            ApiResponse<BaseTemplateDto>.Ok(result));
+        return Ok(ApiResponse<BaseTemplateDto>.Ok(result));
     }
 
     [HttpPut("base/{id:guid}")]
