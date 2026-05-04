@@ -24,7 +24,8 @@ builder.Services.AddCors(options =>
                 "https://127.0.0.1:4200",
                 "http://127.0.0.1:4200",
                 "https://zenvoyce-fe.vercel.app/",
-                "https://feephim.com"
+                "https://feephim.com",
+                "https://www.feephim.com"
                 )
             .AllowAnyHeader()
             .AllowAnyMethod()

@@ -500,6 +500,7 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasColumnName("id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.Donviid).HasColumnName("donviid");
@@ -511,7 +512,9 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("kyhieu");
             entity.Property(e => e.Mauctyid).HasColumnName("mauctyid");
-            entity.Property(e => e.Ngaylap).HasColumnName("ngaylap");
+            entity.Property(e => e.Ngaylap)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("ngaylap");
             entity.Property(e => e.Sohoadon)
                 .HasMaxLength(50)
                 .HasColumnName("sohoadon");
@@ -531,6 +534,7 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasColumnName("trangthai");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
                 .HasColumnName("updated_at");
             entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
             entity.Property(e => e.Xmldaky).HasColumnName("xmldaky");
@@ -562,6 +566,7 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasColumnName("id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.Dienthoai)
@@ -582,6 +587,7 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasColumnName("tenkhachhang");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
                 .HasColumnName("updated_at");
             entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
 
