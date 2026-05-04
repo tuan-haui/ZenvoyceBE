@@ -41,7 +41,7 @@ public class LoginCommandHandler(
         }
 
         var now = dateTimeProvider.UtcNow;
-        var expiredAt = now.AddMinutes(15);
+        var expiredAt = now.AddMinutes(120);
         var roleIds = await userPermissionRepository.GetRoleIdsByUserIdAsync(user.Id, cancellationToken);
         var token = jwtTokenService.GenerateToken(user.Id, roleIds, expiredAt);
 
