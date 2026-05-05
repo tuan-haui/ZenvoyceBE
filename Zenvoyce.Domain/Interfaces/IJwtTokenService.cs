@@ -2,5 +2,5 @@ namespace Zenvoyce.Domain.Interfaces;
 
 public interface IJwtTokenService
 {
-    string GenerateToken(Guid userId, IEnumerable<Guid> roleIds, DateTime expiresAtUtc);
+    string GenerateToken(Guid userId, Guid? roleId, DateTime expiresAtUtc);
 }

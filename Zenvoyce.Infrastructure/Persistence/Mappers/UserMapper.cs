@@ -21,7 +21,9 @@ internal static class UserMapper
             UpdatedAt = source.UpdatedAt ?? DateTime.UtcNow,
             CreatedBy = source.CreatedBy,
             UpdatedBy = source.UpdatedBy,
-            IsDeleted = source.IsDeleted ?? false
+            IsDeleted = source.IsDeleted ?? false,
+            Quyenid = source.Quyenid,
+            Tenquyen = source.Quyen?.Tenquyen
         };
     }
 
@@ -40,5 +42,6 @@ internal static class UserMapper
         target.CreatedBy = source.CreatedBy;
         target.UpdatedBy = source.UpdatedBy;
         target.IsDeleted = source.IsDeleted;
+        target.Quyenid = source.Quyenid;
     }
 }

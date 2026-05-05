@@ -59,20 +59,6 @@ CREATE TABLE IF NOT EXISTS Danhmuchanghoa (
 -- 2. PHÂN HỆ HỆ THỐNG VÀ NGƯỜI DÙNG
 -- =======================================================================
 
-CREATE TABLE IF NOT EXISTS Nguoidung (
-    ID UUID PRIMARY KEY,
-    Madonvi UUID REFERENCES TTcty(ID) ON DELETE SET NULL,
-    Tendangnhap VARCHAR(50) UNIQUE NOT NULL,
-    Matkhau VARCHAR(255) NOT NULL,
-    Dienthoai VARCHAR(20),
-    Trangthai SMALLINT DEFAULT 1,
-    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    Updated_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    Created_By UUID,
-    Updated_By UUID,
-    Is_Deleted BOOLEAN DEFAULT FALSE
-);
-
 CREATE TABLE IF NOT EXISTS Nhomquyen (
     ID UUID PRIMARY KEY,
     Tenquyen VARCHAR(100) NOT NULL,
@@ -88,10 +74,35 @@ CREATE TABLE IF NOT EXISTS Sysmenu (
     ID UUID PRIMARY KEY,
     Tenmenu VARCHAR(100) NOT NULL,
     Duongdan VARCHAR(255),
-    MenuchaID UUID REFERENCES Sysmenu(ID) ON DELETE CASCADE,
-    QuyenID UUID REFERENCES Nhomquyen(ID) ON DELETE SET NULL
+    MenuchaID UUID REFERENCES Sysmenu(ID) ON DELETE CASCADE
 );
 
+-- N-N: Nhóm quyền <-> Menu (cấu trúc mới theo phanquyen.md)
+CREATE TABLE IF NOT EXISTS SysGroupMenu (
+    ID UUID PRIMARY KEY,
+    Quyenid UUID NOT NULL REFERENCES Nhomquyen(ID) ON DELETE CASCADE,
+    Menuid UUID NOT NULL REFERENCES Sysmenu(ID) ON DELETE CASCADE,
+    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Created_By UUID,
+    UNIQUE (Quyenid, Menuid)
+);
+
+CREATE TABLE IF NOT EXISTS Nguoidung (
+    ID UUID PRIMARY KEY,
+    Madonvi UUID REFERENCES TTcty(ID) ON DELETE SET NULL,
+    Quyenid UUID REFERENCES Nhomquyen(ID) ON DELETE RESTRICT,
+    Tendangnhap VARCHAR(50) UNIQUE NOT NULL,
+    Matkhau VARCHAR(255) NOT NULL,
+    Dienthoai VARCHAR(20),
+    Trangthai SMALLINT DEFAULT 1,
+    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Created_By UUID,
+    Updated_By UUID,
+    Is_Deleted BOOLEAN DEFAULT FALSE
+);
+
+-- Legacy: không dùng trong code mới; giữ bảng để không mất dữ liệu cũ.
 CREATE TABLE IF NOT EXISTS PhanQuyenChucNang (
     NguoidungID UUID REFERENCES Nguoidung(ID) ON DELETE CASCADE,
     QuyenID UUID REFERENCES Nhomquyen(ID) ON DELETE CASCADE,

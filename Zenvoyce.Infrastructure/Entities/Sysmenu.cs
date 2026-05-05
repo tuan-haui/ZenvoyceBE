@@ -13,7 +13,13 @@ public partial class Sysmenu
 
     public Guid? Menuchaid { get; set; }
 
-    public Guid? Quyenid { get; set; }
+    public string? Icon { get; set; }
+
+    public int? Stt { get; set; }
+
+    public bool? IsDeleted { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
 
     public virtual ICollection<Sysmenu> InverseMenucha { get; set; } = new List<Sysmenu>();
 
@@ -21,5 +27,5 @@ public partial class Sysmenu
 
     public virtual ICollection<Phanquyenchucnang> Phanquyenchucnangs { get; set; } = new List<Phanquyenchucnang>();
 
-    public virtual Nhomquyen? Quyen { get; set; }
+    public virtual ICollection<Sysgroupmenu> Sysgroupmenus { get; set; } = new List<Sysgroupmenu>();
 }

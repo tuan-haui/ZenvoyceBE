@@ -7,47 +7,31 @@ namespace Zenvoyce.Infrastructure.Persistence.Repositories;
 
 public class MenuRepository(ZenvoyceDbContext dbContext) : IMenuRepository
 {
-    public async Task<IReadOnlyCollection<Sysmenu>> GetSidebarByRoleIdsAsync(
-        IReadOnlyCollection<Guid> roleIds,
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Sysmenu>> GetSidebarByRoleIdAsync(Guid roleId, CancellationToken cancellationToken)
     {
-        if (roleIds.Count == 0)
-        {
-            return [];
-        }
-
-        var menus = await dbContext.Sysmenus
-            .AsNoTracking()
-            .Where(x => x.Quyenid.HasValue && roleIds.Contains(x.Quyenid.Value))
-            .OrderBy(x => x.Tenmenu)
-            .ToListAsync(cancellationToken);
-
-        return menus.Select(x => new Sysmenu
-        {
-            Id = x.Id,
-            Tenmenu = x.Tenmenu,
-            Duongdan = x.Duongdan,
-            MenuchaId = x.Menuchaid,
-            QuyenId = x.Quyenid
-        }).ToArray();
-    }
-
-    public async Task<IReadOnlyCollection<Sysmenu>> GetMenusByRoleIdAsync(Guid roleId, CancellationToken cancellationToken)
-    {
-        var menus = await dbContext.Sysmenus
-            .AsNoTracking()
-            .Where(x => x.Quyenid == roleId)
-            .OrderBy(x => x.Tenmenu)
+        var menus = await (
+                from g in dbContext.Sysgroupmenus.AsNoTracking()
+                join m in dbContext.Sysmenus.AsNoTracking() on g.Menuid equals m.Id
+                where g.Quyenid == roleId && (m.IsDeleted != true)
+                orderby m.Stt ?? 0, m.Tenmenu
+                select m)
             .ToListAsync(cancellationToken);
 
         return menus.Select(ToDomain).ToArray();
+    }
+
+    public Task<IReadOnlyCollection<Sysmenu>> GetMenusByRoleIdAsync(Guid roleId, CancellationToken cancellationToken)
+    {
+        return GetSidebarByRoleIdAsync(roleId, cancellationToken);
     }
 
     public async Task<IReadOnlyCollection<Sysmenu>> GetAllMenusAsync(CancellationToken cancellationToken)
     {
         var menus = await dbContext.Sysmenus
             .AsNoTracking()
-            .OrderBy(x => x.Tenmenu)
+            .Where(x => x.IsDeleted != true)
+            .OrderBy(x => x.Stt ?? 0)
+            .ThenBy(x => x.Tenmenu)
             .ToListAsync(cancellationToken);
 
         return menus.Select(ToDomain).ToArray();
@@ -59,7 +43,8 @@ public class MenuRepository(ZenvoyceDbContext dbContext) : IMenuRepository
         Tenmenu = x.Tenmenu,
         Duongdan = x.Duongdan,
         MenuchaId = x.Menuchaid,
-        QuyenId = x.Quyenid
+        Icon = x.Icon,
+        Stt = x.Stt
     };
 
     public Task<bool> RouteExistsAsync(string routePath, CancellationToken cancellationToken)
@@ -82,7 +67,8 @@ public class MenuRepository(ZenvoyceDbContext dbContext) : IMenuRepository
             Tenmenu = menu.Tenmenu,
             Duongdan = menu.Duongdan,
             Menuchaid = menu.MenuchaId,
-            Quyenid = menu.QuyenId
+            Icon = menu.Icon,
+            Stt = menu.Stt ?? 0
         };
 
         dbContext.Sysmenus.Add(entity);

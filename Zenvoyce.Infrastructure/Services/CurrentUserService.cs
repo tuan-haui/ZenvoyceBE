@@ -15,19 +15,12 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
         }
     }
 
-    public IReadOnlyCollection<Guid> RoleIds
+    public Guid? RoleId
     {
         get
         {
-            var roleIds = httpContextAccessor.HttpContext?.User
-                .FindAll("role_id")
-                .Select(x => x.Value)
-                .Where(x => Guid.TryParse(x, out _))
-                .Select(Guid.Parse)
-                .Distinct()
-                .ToArray();
-
-            return roleIds ?? [];
+            var first = httpContextAccessor.HttpContext?.User.FindFirst("role_id")?.Value;
+            return Guid.TryParse(first, out var parsed) ? parsed : null;
         }
     }
 }

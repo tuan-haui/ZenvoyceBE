@@ -27,7 +27,7 @@ public partial class Danhmuchanghoa
 
     public string? Sku { get; set; }
 
-    public short? Thuesuat { get; set; }
+    public decimal? Thuesuat { get; set; }
 
     public virtual Ttcty? Donvi { get; set; }
 

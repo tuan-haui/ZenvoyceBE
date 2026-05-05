@@ -35,6 +35,8 @@ public partial class ZenvoyceDbContext : DbContext
 
     public virtual DbSet<Qlkyso> Qlkysos { get; set; }
 
+    public virtual DbSet<Sysgroupmenu> Sysgroupmenus { get; set; }
+
     public virtual DbSet<Sysmenu> Sysmenus { get; set; }
 
     public virtual DbSet<Thongtinhdmau> Thongtinhdmaus { get; set; }
@@ -80,7 +82,9 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.Tenhanghoa)
                 .HasMaxLength(255)
                 .HasColumnName("tenhanghoa");
-            entity.Property(e => e.Thuesuat).HasColumnName("thuesuat");
+            entity.Property(e => e.Thuesuat)
+                .HasPrecision(18, 2)
+                .HasColumnName("thuesuat");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("updated_at");
@@ -299,6 +303,7 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.Matkhau)
                 .HasMaxLength(255)
                 .HasColumnName("matkhau");
+            entity.Property(e => e.Quyenid).HasColumnName("quyenid");
             entity.Property(e => e.Tendangnhap)
                 .HasMaxLength(50)
                 .HasColumnName("tendangnhap");
@@ -314,6 +319,11 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasForeignKey(d => d.Madonvi)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("nguoidung_madonvi_fkey");
+
+            entity.HasOne(d => d.Quyen).WithMany(p => p.Nguoidungs)
+                .HasForeignKey(d => d.Quyenid)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Nguoidung_Nhomquyen");
         });
 
         modelBuilder.Entity<Nhomquyen>(entity =>
@@ -391,6 +401,34 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasConstraintName("qlkyso_hoadonid_fkey");
         });
 
+        modelBuilder.Entity<Sysgroupmenu>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("sysgroupmenu_pkey");
+
+            entity.ToTable("sysgroupmenu");
+
+            entity.HasIndex(e => new { e.Quyenid, e.Menuid }, "IX_SysGroupMenu_Quyen_Menu").IsUnique();
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.Menuid).HasColumnName("menuid");
+            entity.Property(e => e.Quyenid).HasColumnName("quyenid");
+
+            entity.HasOne(d => d.Menu).WithMany(p => p.Sysgroupmenus)
+                .HasForeignKey(d => d.Menuid)
+                .HasConstraintName("FK_SysGroupMenu_Sysmenu");
+
+            entity.HasOne(d => d.Quyen).WithMany(p => p.Sysgroupmenus)
+                .HasForeignKey(d => d.Quyenid)
+                .HasConstraintName("FK_SysGroupMenu_Nhomquyen");
+        });
+
         modelBuilder.Entity<Sysmenu>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("sysmenu_pkey");
@@ -400,11 +438,23 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("created_at");
             entity.Property(e => e.Duongdan)
                 .HasMaxLength(255)
                 .HasColumnName("duongdan");
+            entity.Property(e => e.Icon)
+                .HasMaxLength(50)
+                .HasColumnName("icon");
+            entity.Property(e => e.IsDeleted)
+                .HasDefaultValue(false)
+                .HasColumnName("is_deleted");
             entity.Property(e => e.Menuchaid).HasColumnName("menuchaid");
-            entity.Property(e => e.Quyenid).HasColumnName("quyenid");
+            entity.Property(e => e.Stt)
+                .HasDefaultValue(0)
+                .HasColumnName("stt");
             entity.Property(e => e.Tenmenu)
                 .HasMaxLength(100)
                 .HasColumnName("tenmenu");
@@ -413,11 +463,6 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasForeignKey(d => d.Menuchaid)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("sysmenu_menuchaid_fkey");
-
-            entity.HasOne(d => d.Quyen).WithMany(p => p.Sysmenus)
-                .HasForeignKey(d => d.Quyenid)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("sysmenu_quyenid_fkey");
         });
 
         modelBuilder.Entity<Thongtinhdmau>(entity =>

@@ -6,5 +6,6 @@ public class MenuDto
     public string Tenmenu { get; set; } = string.Empty;
     public string? Duongdan { get; set; }
     public Guid? MenuchaId { get; set; }
-    public Guid? QuyenId { get; set; }
+    public string? Icon { get; set; }
+    public int? Stt { get; set; }
 }

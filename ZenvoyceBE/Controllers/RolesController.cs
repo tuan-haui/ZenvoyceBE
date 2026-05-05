@@ -29,10 +29,10 @@ public class RolesController(ISender mediator) : ControllerBase
         return Ok(ApiResponse<RoleDto>.Ok(result));
     }
 
-    [HttpGet("{roleId:guid}/users/{userId:guid}/assigned-menu-ids")]
-    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<Guid>>>> GetAssignedMenuIds(Guid roleId, Guid userId)
+    [HttpGet("{roleId:guid}/assigned-menu-ids")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<Guid>>>> GetAssignedMenuIds(Guid roleId)
     {
-        var result = await mediator.Send(new GetAssignedMenuIdsQuery(roleId, userId));
+        var result = await mediator.Send(new GetAssignedMenuIdsQuery(roleId));
         return Ok(ApiResponse<IReadOnlyCollection<Guid>>.Ok(result));
     }
 
@@ -45,7 +45,7 @@ public class RolesController(ISender mediator) : ControllerBase
             return BadRequest(ApiResponse<object?>.Fail("RoleId trong body không khớp với route id."));
         }
 
-        await mediator.Send(new AssignPermissionsCommand(id, payload.UserId, payload.MenuIds));
+        await mediator.Send(new AssignPermissionsCommand(id, payload.MenuIds));
         return Ok(ApiResponse<object?>.Ok(null));
     }
 }

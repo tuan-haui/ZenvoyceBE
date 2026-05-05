@@ -10,6 +10,7 @@ namespace Zenvoyce.Application.Features.Users.Commands.UpdateUser;
 public record UpdateUserCommand(
     Guid Id,
     Guid? Madonvi,
+    Guid? Quyenid,
     string? Hoten,
     string? Email,
     string? Dienthoai,
@@ -29,6 +30,7 @@ public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
 
 public class UpdateUserCommandHandler(
     IUserRepository userRepository,
+    IRoleRepository roleRepository,
     ICurrentUserService currentUserService,
     IDateTimeProvider dateTimeProvider,
     IMapper mapper) : IRequestHandler<UpdateUserCommand, UserDto>
@@ -44,7 +46,14 @@ public class UpdateUserCommandHandler(
             throw new InvalidOperationException("Email đã được sử dụng.");
         }
 
+        if (request.Quyenid.HasValue
+            && !await roleRepository.ExistsAsync(request.Quyenid.Value, cancellationToken))
+        {
+            throw new KeyNotFoundException("Không tìm thấy nhóm quyền.");
+        }
+
         user.Madonvi = request.Madonvi;
+        user.Quyenid = request.Quyenid;
         user.Hoten = string.IsNullOrWhiteSpace(request.Hoten) ? null : request.Hoten.Trim();
         user.Email = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email.Trim();
         user.Dienthoai = request.Dienthoai;

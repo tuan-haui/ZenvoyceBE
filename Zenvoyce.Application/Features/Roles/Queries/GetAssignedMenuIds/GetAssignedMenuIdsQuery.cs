@@ -3,7 +3,7 @@ using Zenvoyce.Application.Abstractions.Persistence;
 
 namespace Zenvoyce.Application.Features.Roles.Queries.GetAssignedMenuIds;
 
-public record GetAssignedMenuIdsQuery(Guid RoleId, Guid UserId) : IRequest<IReadOnlyCollection<Guid>>;
+public record GetAssignedMenuIdsQuery(Guid RoleId) : IRequest<IReadOnlyCollection<Guid>>;
 
 public class GetAssignedMenuIdsQueryHandler(IPermissionRepository permissionRepository)
     : IRequestHandler<GetAssignedMenuIdsQuery, IReadOnlyCollection<Guid>>
@@ -12,10 +12,7 @@ public class GetAssignedMenuIdsQueryHandler(IPermissionRepository permissionRepo
         GetAssignedMenuIdsQuery request,
         CancellationToken cancellationToken)
     {
-        var ids = await permissionRepository.GetAssignedMenuIdsAsync(
-            request.RoleId,
-            request.UserId,
-            cancellationToken);
+        var ids = await permissionRepository.GetAssignedMenuIdsAsync(request.RoleId, cancellationToken);
         return ids;
     }
 }

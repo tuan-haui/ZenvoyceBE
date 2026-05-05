@@ -6,53 +6,50 @@ namespace Zenvoyce.Infrastructure.Persistence.Repositories;
 
 public class UserPermissionRepository(ZenvoyceDbContext dbContext) : IUserPermissionRepository, IPermissionRepository
 {
-    public async Task<IReadOnlyCollection<Guid>> GetRoleIdsByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+    public Task<Guid?> GetRoleIdByUserIdAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var roleIds = await dbContext.Phanquyenchucnangs
+        return dbContext.Nguoidungs
             .AsNoTracking()
-            .Where(x => x.Nguoidungid == userId)
+            .Where(x => x.Id == userId)
             .Select(x => x.Quyenid)
-            .Distinct()
-            .ToListAsync(cancellationToken);
-
-        return roleIds;
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task AssignMenusAsync(
+    public async Task AssignMenusToRoleAsync(
         Guid roleId,
-        Guid userId,
         IReadOnlyCollection<Guid> menuIds,
+        Guid? actorUserId,
         CancellationToken cancellationToken)
     {
-        var existingPermissions = await dbContext.Phanquyenchucnangs
-            .Where(x => x.Nguoidungid == userId && x.Quyenid == roleId)
+        var existing = await dbContext.Sysgroupmenus
+            .Where(x => x.Quyenid == roleId)
             .ToListAsync(cancellationToken);
 
-        dbContext.Phanquyenchucnangs.RemoveRange(existingPermissions);
+        dbContext.Sysgroupmenus.RemoveRange(existing);
 
         if (menuIds.Count > 0)
         {
-            var newPermissions = menuIds.Select(menuId => new Entities.Phanquyenchucnang
+            var now = DateTime.UtcNow;
+            var rows = menuIds.Distinct().Select(menuId => new Entities.Sysgroupmenu
             {
-                Nguoidungid = userId,
+                Id = Guid.NewGuid(),
                 Quyenid = roleId,
-                Menuid = menuId
+                Menuid = menuId,
+                CreatedAt = now,
+                CreatedBy = actorUserId
             });
 
-            await dbContext.Phanquyenchucnangs.AddRangeAsync(newPermissions, cancellationToken);
+            await dbContext.Sysgroupmenus.AddRangeAsync(rows, cancellationToken);
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Guid>> GetAssignedMenuIdsAsync(
-        Guid roleId,
-        Guid userId,
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Guid>> GetAssignedMenuIdsAsync(Guid roleId, CancellationToken cancellationToken)
     {
-        return await dbContext.Phanquyenchucnangs
+        return await dbContext.Sysgroupmenus
             .AsNoTracking()
-            .Where(x => x.Nguoidungid == userId && x.Quyenid == roleId)
+            .Where(x => x.Quyenid == roleId)
             .Select(x => x.Menuid)
             .Distinct()
             .ToListAsync(cancellationToken);

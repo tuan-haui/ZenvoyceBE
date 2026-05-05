@@ -11,6 +11,8 @@ public class UserDto
     public short Trangthai { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public Guid? Quyenid { get; set; }
+    public string? Tenquyen { get; set; }
 }
 
 public class LoginUserInfoDto
@@ -19,4 +21,6 @@ public class LoginUserInfoDto
     public string Tendangnhap { get; set; } = string.Empty;
     public string? Hoten { get; set; }
     public short Trangthai { get; set; }
+    public Guid? Quyenid { get; set; }
+    public string? Tenquyen { get; set; }
 }

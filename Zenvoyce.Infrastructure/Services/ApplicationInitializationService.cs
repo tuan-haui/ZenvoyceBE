@@ -10,7 +10,7 @@ using ZenvoyceDbContext = Zenvoyce.Infrastructure.Entities.ZenvoyceDbContext;
 namespace Zenvoyce.Infrastructure.Services;
 
 /// <summary>
-/// Khởi tạo nhóm quyền + menu + tài khoản admin và phân quyền sidebar (transaction).
+/// Khởi tạo nhóm quyền + menu + SysGroupMenu + tài khoản admin (transaction).
 /// </summary>
 public class ApplicationInitializationService(
     ZenvoyceDbContext dbContext,
@@ -83,9 +83,9 @@ public class ApplicationInitializationService(
             }, cancellationToken);
             rolesCreated++;
 
-            var adminMenuIds = new List<Guid>();
+            var allMenuIds = new List<Guid>();
 
-            async Task<Guid> AddMenuAsync(Guid roleId, string tenmenu, string? duongdan, Guid? menuchaId)
+            async Task<Guid> AddMenuAsync(string tenmenu, string? duongdan, Guid? menuchaId, int stt = 0)
             {
                 var id = Guid.NewGuid();
                 await menuRepository.AddAsync(new Sysmenu
@@ -94,52 +94,55 @@ public class ApplicationInitializationService(
                     Tenmenu = tenmenu,
                     Duongdan = duongdan,
                     MenuchaId = menuchaId,
-                    QuyenId = roleId
+                    Icon = null,
+                    Stt = stt
                 }, cancellationToken);
                 menusCreated++;
-                if (roleId == adminRoleId)
-                {
-                    adminMenuIds.Add(id);
-                }
-
+                allMenuIds.Add(id);
                 return id;
             }
 
-            // --- Menu gốc: Quản trị viên ---
-            _ = await AddMenuAsync(adminRoleId, "Dashboard", "/admin/dashboard", null);
+            var dashId = await AddMenuAsync("Dashboard", "/admin/dashboard", null, 1);
 
-            var sysRoot = await AddMenuAsync(adminRoleId, "Hệ thống", null, null);
-            _ = await AddMenuAsync(adminRoleId, "Người dùng", "/admin/users", sysRoot);
-            _ = await AddMenuAsync(adminRoleId, "Nhóm quyền", "/admin/roles", sysRoot);
-            _ = await AddMenuAsync(adminRoleId, "Nhật ký hệ thống", "/admin/system/logs", sysRoot);
+            var sysRoot = await AddMenuAsync("Hệ thống", null, null, 10);
+            _ = await AddMenuAsync("Người dùng", "/admin/users", sysRoot, 11);
+            _ = await AddMenuAsync("Nhóm quyền", "/admin/roles", sysRoot, 12);
+            _ = await AddMenuAsync("Nhật ký hệ thống", "/admin/system/logs", sysRoot, 13);
 
-            var catRoot = await AddMenuAsync(adminRoleId, "Danh mục", null, null);
-            _ = await AddMenuAsync(adminRoleId, "Công ty", "/admin/companies", catRoot);
-            _ = await AddMenuAsync(adminRoleId, "Khách hàng", "/admin/customers", catRoot);
-            _ = await AddMenuAsync(adminRoleId, "Sản phẩm", "/admin/products", catRoot);
+            var catRoot = await AddMenuAsync("Danh mục", null, null, 20);
+            var companiesId = await AddMenuAsync("Công ty", "/admin/companies", catRoot, 21);
+            var customersId = await AddMenuAsync("Khách hàng", "/admin/customers", catRoot, 22);
+            var productsId = await AddMenuAsync("Hàng hoá", "/admin/products", catRoot, 23);
 
-            var tplRoot = await AddMenuAsync(adminRoleId, "Mẫu in", null, null);
-            _ = await AddMenuAsync(adminRoleId, "Cấu hình mẫu", "/admin/templates/setup", tplRoot);
-            _ = await AddMenuAsync(adminRoleId, "Kho mẫu", "/admin/templates/warehouse", tplRoot);
+            var tplRoot = await AddMenuAsync("Mẫu in", null, null, 30);
+            _ = await AddMenuAsync("Cấu hình mẫu", "/admin/templates/setup", tplRoot, 31);
+            _ = await AddMenuAsync("Kho mẫu", "/admin/templates/warehouse", tplRoot, 32);
 
-            var invRoot = await AddMenuAsync(adminRoleId, "Hóa đơn", null, null);
-            _ = await AddMenuAsync(adminRoleId, "Danh sách hóa đơn", "/admin/invoices", invRoot);
-            _ = await AddMenuAsync(adminRoleId, "Báo cáo doanh thu", "/admin/reports/sales", invRoot);
+            var invRoot = await AddMenuAsync("Hóa đơn", null, null, 40);
+            var invoicesId = await AddMenuAsync("Danh sách hóa đơn", "/admin/invoices", invRoot, 41);
+            var salesId = await AddMenuAsync("Báo cáo doanh thu", "/admin/reports/sales", invRoot, 42);
 
-            // --- Menu nhân viên: dashboard + danh mục + hóa đơn (không hệ thống / không mẫu in chi tiết) ---
-            _ = await AddMenuAsync(staffRoleId, "Dashboard", "/admin/dashboard", null);
-            var stCatRoot = await AddMenuAsync(staffRoleId, "Danh mục", null, null);
-            _ = await AddMenuAsync(staffRoleId, "Công ty", "/admin/companies", stCatRoot);
-            _ = await AddMenuAsync(staffRoleId, "Khách hàng", "/admin/customers", stCatRoot);
-            _ = await AddMenuAsync(staffRoleId, "Sản phẩm", "/admin/products", stCatRoot);
-            var stInvRoot = await AddMenuAsync(staffRoleId, "Hóa đơn", null, null);
-            _ = await AddMenuAsync(staffRoleId, "Danh sách hóa đơn", "/admin/invoices", stInvRoot);
-            _ = await AddMenuAsync(staffRoleId, "Báo cáo doanh thu", "/admin/reports/sales", stInvRoot);
+            await permissionRepository.AssignMenusToRoleAsync(adminRoleId, allMenuIds, null, cancellationToken);
+
+            var staffMenuIds = new[]
+            {
+                dashId,
+                catRoot,
+                companiesId,
+                customersId,
+                productsId,
+                invRoot,
+                invoicesId,
+                salesId
+            };
+
+            await permissionRepository.AssignMenusToRoleAsync(staffRoleId, staffMenuIds, null, cancellationToken);
 
             var adminUser = new Nguoidung
             {
                 Id = Guid.NewGuid(),
                 Madonvi = null,
+                Quyenid = adminRoleId,
                 Tendangnhap = username,
                 Matkhau = passwordHasher.Hash(password),
                 Hoten = fullName,
@@ -155,12 +158,6 @@ public class ApplicationInitializationService(
 
             await userRepository.AddAsync(adminUser, cancellationToken);
 
-            await permissionRepository.AssignMenusAsync(
-                adminRoleId,
-                adminUser.Id,
-                adminMenuIds,
-                cancellationToken);
-
             await transaction.CommitAsync(cancellationToken);
 
             return new InitializeSystemResponseDto
@@ -172,7 +169,7 @@ public class ApplicationInitializationService(
                 AdminUserId = adminUser.Id,
                 RolesCreated = rolesCreated,
                 MenusCreated = menusCreated,
-                AdminPermissionRows = adminMenuIds.Count
+                AdminPermissionRows = allMenuIds.Count
             };
         }
         catch

@@ -10,8 +10,10 @@ namespace Zenvoyce.Application.Features.Products.Commands.CreateProduct;
 public record CreateProductCommand(
     Guid Donviid,
     string Tenhanghoa,
+    string? Sku,
     string? Donvitinh,
-    decimal Dongia) : IRequest<ProductDto>;
+    decimal Dongia,
+    decimal Thuesuat) : IRequest<ProductDto>;
 
 public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
 {
@@ -19,8 +21,10 @@ public class CreateProductCommandValidator : AbstractValidator<CreateProductComm
     {
         RuleFor(x => x.Donviid).NotEmpty();
         RuleFor(x => x.Tenhanghoa).NotEmpty().MaximumLength(255);
+        RuleFor(x => x.Sku).MaximumLength(20);
         RuleFor(x => x.Donvitinh).MaximumLength(50);
         RuleFor(x => x.Dongia).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.Thuesuat).GreaterThanOrEqualTo(0);
     }
 }
 
@@ -48,8 +52,10 @@ public class CreateProductCommandHandler(
             Id = Guid.NewGuid(),
             Donviid = request.Donviid,
             Tenhanghoa = productName,
+            Sku = request.Sku?.Trim(),
             Donvitinh = request.Donvitinh?.Trim(),
             Dongia = request.Dongia,
+            Thuesuat = request.Thuesuat,
             CreatedAt = now,
             UpdatedAt = now,
             CreatedBy = currentUserService.UserId,
@@ -64,8 +70,10 @@ public class CreateProductCommandHandler(
             Id = product.Id,
             Donviid = product.Donviid,
             Tenhanghoa = product.Tenhanghoa,
+            Sku = product.Sku,
             Donvitinh = product.Donvitinh,
-            Dongia = product.Dongia
+            Dongia = product.Dongia,
+            Thuesuat = product.Thuesuat
         };
     }
 }

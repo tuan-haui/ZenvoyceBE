@@ -10,6 +10,7 @@ namespace Zenvoyce.Application.Features.Users.Commands.CreateUser;
 
 public record CreateUserCommand(
     Guid? Madonvi,
+    Guid? Quyenid,
     string Tendangnhap,
     string Matkhau,
     string? Hoten,
@@ -34,6 +35,7 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 
 public class CreateUserCommandHandler(
     IUserRepository userRepository,
+    IRoleRepository roleRepository,
     IPasswordHasher passwordHasher,
     ICurrentUserService currentUserService,
     IDateTimeProvider dateTimeProvider,
@@ -52,11 +54,18 @@ public class CreateUserCommandHandler(
             throw new InvalidOperationException("Email đã được sử dụng.");
         }
 
+        if (request.Quyenid.HasValue
+            && !await roleRepository.ExistsAsync(request.Quyenid.Value, cancellationToken))
+        {
+            throw new KeyNotFoundException("Không tìm thấy nhóm quyền.");
+        }
+
         var now = dateTimeProvider.UtcNow;
         var user = new Nguoidung
         {
             Id = Guid.NewGuid(),
             Madonvi = request.Madonvi,
+            Quyenid = request.Quyenid,
             Tendangnhap = request.Tendangnhap,
             Matkhau = passwordHasher.Hash(request.Matkhau),
             Hoten = string.IsNullOrWhiteSpace(request.Hoten) ? null : request.Hoten.Trim(),

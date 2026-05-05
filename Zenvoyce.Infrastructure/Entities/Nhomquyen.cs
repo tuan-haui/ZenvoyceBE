@@ -21,7 +21,9 @@ public partial class Nhomquyen
 
     public bool? IsDeleted { get; set; }
 
+    public virtual ICollection<Nguoidung> Nguoidungs { get; set; } = new List<Nguoidung>();
+
     public virtual ICollection<Phanquyenchucnang> Phanquyenchucnangs { get; set; } = new List<Phanquyenchucnang>();
 
-    public virtual ICollection<Sysmenu> Sysmenus { get; set; } = new List<Sysmenu>();
+    public virtual ICollection<Sysgroupmenu> Sysgroupmenus { get; set; } = new List<Sysgroupmenu>();
 }

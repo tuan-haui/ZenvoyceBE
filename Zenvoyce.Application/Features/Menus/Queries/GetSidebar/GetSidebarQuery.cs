@@ -18,20 +18,21 @@ public class GetSidebarQueryHandler(
 {
     public async Task<IReadOnlyCollection<MenuDto>> Handle(GetSidebarQuery request, CancellationToken cancellationToken)
     {
-        var roleIds = currentUserService.RoleIds;
-        if (roleIds.Count == 0)
+        var roleId = currentUserService.RoleId;
+        if (!roleId.HasValue)
         {
             return [];
         }
 
-        var menus = await menuRepository.GetSidebarByRoleIdsAsync(roleIds, cancellationToken);
+        var menus = await menuRepository.GetSidebarByRoleIdAsync(roleId.Value, cancellationToken);
         return menus.Select(x => new MenuDto
         {
             Id = x.Id,
             Tenmenu = x.Tenmenu,
             Duongdan = x.Duongdan,
             MenuchaId = x.MenuchaId,
-            QuyenId = x.QuyenId
+            Icon = x.Icon,
+            Stt = x.Stt
         }).ToArray();
     }
 }

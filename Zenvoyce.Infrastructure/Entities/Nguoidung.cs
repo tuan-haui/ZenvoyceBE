@@ -31,9 +31,13 @@ public partial class Nguoidung
 
     public string? Email { get; set; }
 
+    public Guid? Quyenid { get; set; }
+
     public virtual ICollection<Lichsuhoadon> Lichsuhoadons { get; set; } = new List<Lichsuhoadon>();
 
     public virtual Ttcty? MadonviNavigation { get; set; }
 
     public virtual ICollection<Phanquyenchucnang> Phanquyenchucnangs { get; set; } = new List<Phanquyenchucnang>();
+
+    public virtual Nhomquyen? Quyen { get; set; }
 }

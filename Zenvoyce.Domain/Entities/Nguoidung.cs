@@ -15,4 +15,10 @@ public class Nguoidung
     public Guid? CreatedBy { get; set; }
     public Guid? UpdatedBy { get; set; }
     public bool IsDeleted { get; set; }
+
+    /// <summary>Khóa ngoại tới nhóm quyền (1 user — 1 nhóm quyền).</summary>
+    public Guid? Quyenid { get; set; }
+
+    /// <summary>Chỉ dùng khi đọc (join); không map vào bảng khi ghi.</summary>
+    public string? Tenquyen { get; set; }
 }

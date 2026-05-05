@@ -61,8 +61,10 @@ public class ProductRepository(ZenvoyceDbContext dbContext) : IProductRepository
             Id = product.Id,
             Donviid = product.Donviid,
             Tenhanghoa = product.Tenhanghoa,
+            Sku = product.Sku,
             Donvitinh = product.Donvitinh,
             Dongia = product.Dongia,
+            Thuesuat = product.Thuesuat,
             CreatedAt = product.CreatedAt,
             UpdatedAt = product.UpdatedAt,
             CreatedBy = product.CreatedBy,
@@ -80,8 +82,10 @@ public class ProductRepository(ZenvoyceDbContext dbContext) : IProductRepository
             ?? throw new KeyNotFoundException("Không tìm thấy hàng hóa.");
 
         entity.Tenhanghoa = product.Tenhanghoa;
+        entity.Sku = product.Sku;
         entity.Donvitinh = product.Donvitinh;
         entity.Dongia = product.Dongia;
+        entity.Thuesuat = product.Thuesuat;
         entity.UpdatedAt = product.UpdatedAt;
         entity.UpdatedBy = product.UpdatedBy;
         entity.IsDeleted = product.IsDeleted;
@@ -96,8 +100,10 @@ public class ProductRepository(ZenvoyceDbContext dbContext) : IProductRepository
             Id = entity.Id,
             Donviid = entity.Donviid ?? Guid.Empty,
             Tenhanghoa = entity.Tenhanghoa,
+            Sku = entity.Sku,
             Donvitinh = entity.Donvitinh,
             Dongia = entity.Dongia ?? 0,
+            Thuesuat = entity.Thuesuat ?? 0,
             CreatedAt = entity.CreatedAt ?? DateTime.MinValue,
             UpdatedAt = entity.UpdatedAt ?? DateTime.MinValue,
             CreatedBy = entity.CreatedBy,

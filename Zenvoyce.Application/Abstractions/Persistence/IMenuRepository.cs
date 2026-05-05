@@ -4,7 +4,7 @@ namespace Zenvoyce.Application.Abstractions.Persistence;
 
 public interface IMenuRepository
 {
-    Task<IReadOnlyCollection<Sysmenu>> GetSidebarByRoleIdsAsync(IReadOnlyCollection<Guid> roleIds, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<Sysmenu>> GetSidebarByRoleIdAsync(Guid roleId, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<Sysmenu>> GetMenusByRoleIdAsync(Guid roleId, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<Sysmenu>> GetAllMenusAsync(CancellationToken cancellationToken);
     Task<bool> RouteExistsAsync(string routePath, CancellationToken cancellationToken);

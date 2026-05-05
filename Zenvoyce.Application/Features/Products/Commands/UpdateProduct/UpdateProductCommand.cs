@@ -9,8 +9,10 @@ namespace Zenvoyce.Application.Features.Products.Commands.UpdateProduct;
 public record UpdateProductCommand(
     Guid Id,
     string Tenhanghoa,
+    string? Sku,
     string? Donvitinh,
-    decimal Dongia) : IRequest<ProductDto>;
+    decimal Dongia,
+    decimal Thuesuat) : IRequest<ProductDto>;
 
 public class UpdateProductCommandValidator : AbstractValidator<UpdateProductCommand>
 {
@@ -18,8 +20,10 @@ public class UpdateProductCommandValidator : AbstractValidator<UpdateProductComm
     {
         RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Tenhanghoa).NotEmpty().MaximumLength(255);
+        RuleFor(x => x.Sku).MaximumLength(20);
         RuleFor(x => x.Donvitinh).MaximumLength(50);
         RuleFor(x => x.Dongia).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.Thuesuat).GreaterThanOrEqualTo(0);
     }
 }
 
@@ -40,8 +44,10 @@ public class UpdateProductCommandHandler(
         }
 
         product.Tenhanghoa = productName;
+        product.Sku = request.Sku?.Trim();
         product.Donvitinh = request.Donvitinh?.Trim();
         product.Dongia = request.Dongia;
+        product.Thuesuat = request.Thuesuat;
         product.UpdatedAt = dateTimeProvider.UtcNow;
         product.UpdatedBy = currentUserService.UserId;
 
@@ -52,8 +58,10 @@ public class UpdateProductCommandHandler(
             Id = product.Id,
             Donviid = product.Donviid,
             Tenhanghoa = product.Tenhanghoa,
+            Sku = product.Sku,
             Donvitinh = product.Donvitinh,
-            Dongia = product.Dongia
+            Dongia = product.Dongia,
+            Thuesuat = product.Thuesuat
         };
     }
 }

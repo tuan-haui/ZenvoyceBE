@@ -17,8 +17,10 @@ public class GetProductsByCompanyQueryHandler(IProductRepository productReposito
             Id = x.Id,
             Donviid = x.Donviid,
             Tenhanghoa = x.Tenhanghoa,
+            Sku = x.Sku,
             Donvitinh = x.Donvitinh,
-            Dongia = x.Dongia
+            Dongia = x.Dongia,
+            Thuesuat = x.Thuesuat
         }).ToArray();
     }
 }

@@ -13,11 +13,9 @@ public class GetMenusForRoleQueryHandler(IMenuRepository menuRepository)
         GetMenusForRoleQuery request,
         CancellationToken cancellationToken)
     {
-        var menus = await menuRepository.GetMenusByRoleIdAsync(request.RoleId, cancellationToken);
-        if (menus.Count == 0)
-        {
-            menus = await menuRepository.GetAllMenusAsync(cancellationToken);
-        }
+        _ = request.RoleId;
+
+        var menus = await menuRepository.GetAllMenusAsync(cancellationToken);
 
         return menus
             .Select(x => new MenuDto
@@ -26,7 +24,8 @@ public class GetMenusForRoleQueryHandler(IMenuRepository menuRepository)
                 Tenmenu = x.Tenmenu,
                 Duongdan = x.Duongdan,
                 MenuchaId = x.MenuchaId,
-                QuyenId = x.QuyenId
+                Icon = x.Icon,
+                Stt = x.Stt
             })
             .ToArray();
     }

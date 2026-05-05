@@ -12,6 +12,7 @@ public class UserRepository(ZenvoyceDbContext dbContext) : IUserRepository
     {
         var user = await dbContext.Nguoidungs
             .AsNoTracking()
+            .Include(x => x.Quyen)
             .FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted != true, cancellationToken);
 
         return user?.ToDomain();
@@ -21,6 +22,7 @@ public class UserRepository(ZenvoyceDbContext dbContext) : IUserRepository
     {
         var user = await dbContext.Nguoidungs
             .AsNoTracking()
+            .Include(x => x.Quyen)
             .FirstOrDefaultAsync(x => x.Tendangnhap == username && x.IsDeleted != true, cancellationToken);
 
         return user?.ToDomain();
@@ -51,6 +53,7 @@ public class UserRepository(ZenvoyceDbContext dbContext) : IUserRepository
 
         var users = await dbContext.Nguoidungs
             .AsNoTracking()
+            .Include(x => x.Quyen)
             .Where(x => x.IsDeleted != true)
             .OrderBy(x => x.CreatedAt)
             .Skip((normalizedPage - 1) * normalizedSize)

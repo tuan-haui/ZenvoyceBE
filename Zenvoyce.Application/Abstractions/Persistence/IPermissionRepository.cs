@@ -2,6 +2,11 @@ namespace Zenvoyce.Application.Abstractions.Persistence;
 
 public interface IPermissionRepository
 {
-    Task AssignMenusAsync(Guid roleId, Guid userId, IReadOnlyCollection<Guid> menuIds, CancellationToken cancellationToken);
-    Task<IReadOnlyList<Guid>> GetAssignedMenuIdsAsync(Guid roleId, Guid userId, CancellationToken cancellationToken);
+    Task AssignMenusToRoleAsync(
+        Guid roleId,
+        IReadOnlyCollection<Guid> menuIds,
+        Guid? actorUserId,
+        CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<Guid>> GetAssignedMenuIdsAsync(Guid roleId, CancellationToken cancellationToken);
 }
