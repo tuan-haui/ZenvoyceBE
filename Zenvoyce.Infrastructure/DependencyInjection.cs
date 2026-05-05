@@ -29,6 +29,12 @@ public static class DependencyInjection
             .Bind(configuration.GetSection(DigitalSignatureOptions.SectionName))
             .Validate(x => !string.IsNullOrWhiteSpace(x.PfxPath), "DigitalSignature:PfxPath is required.")
             .ValidateOnStart();
+        services.AddOptions<SmtpSettings>()
+            .Bind(configuration.GetSection(SmtpSettings.SectionName))
+            .Validate(x => !string.IsNullOrWhiteSpace(x.Host), "SmtpSettings:Host is required.")
+            .Validate(x => x.Port > 0 && x.Port <= 65535, "SmtpSettings:Port must be in range 1-65535.")
+            .Validate(x => !string.IsNullOrWhiteSpace(x.From), "SmtpSettings:From is required.")
+            .ValidateOnStart();
         services.AddScoped<IApplicationInitializationService, ApplicationInitializationService>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
@@ -50,6 +56,7 @@ public static class DependencyInjection
 
         services.AddSingleton<ITemplateRenderer, HandlebarsTemplateRenderer>();
         services.AddSingleton<IInvoicePdfRenderer, PuppeteerPdfRenderer>();
+        services.AddScoped<IInvoiceEmailService, SmtpInvoiceEmailService>();
         services.AddSingleton<IXmlInvoiceSigner, XmlInvoiceSigner>();
 
         return services;
