@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Zenvoyce.Application.Abstractions;
 using Zenvoyce.Application.Abstractions.Persistence;
+using Zenvoyce.Application.Abstractions.Services;
 using Zenvoyce.Domain.Interfaces;
 using Zenvoyce.Infrastructure.Entities;
 using Zenvoyce.Infrastructure.Persistence.Repositories;
@@ -24,6 +25,10 @@ public static class DependencyInjection
             .Bind(configuration.GetSection(JwtOptions.SectionName));
         services.AddOptions<BootstrapOptions>()
             .Bind(configuration.GetSection(BootstrapOptions.SectionName));
+        services.AddOptions<DigitalSignatureOptions>()
+            .Bind(configuration.GetSection(DigitalSignatureOptions.SectionName))
+            .Validate(x => !string.IsNullOrWhiteSpace(x.PfxPath), "DigitalSignature:PfxPath is required.")
+            .ValidateOnStart();
         services.AddScoped<IApplicationInitializationService, ApplicationInitializationService>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
@@ -42,6 +47,10 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+
+        services.AddSingleton<ITemplateRenderer, HandlebarsTemplateRenderer>();
+        services.AddSingleton<IInvoicePdfRenderer, PuppeteerPdfRenderer>();
+        services.AddSingleton<IXmlInvoiceSigner, XmlInvoiceSigner>();
 
         return services;
     }

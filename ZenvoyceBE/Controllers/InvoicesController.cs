@@ -12,6 +12,7 @@ using Zenvoyce.Application.Features.Invoices.DTOs;
 using Zenvoyce.Application.Features.Invoices.Queries.GetInvoiceHistory;
 using Zenvoyce.Application.Features.Invoices.Queries.GetInvoices;
 using Zenvoyce.Application.Features.Invoices.Queries.GetSalesReport;
+using Zenvoyce.Application.Features.Invoices.Queries.PreviewInvoicePdf;
 
 namespace Zenvoyce.API.Controllers;
 
@@ -96,6 +97,15 @@ public class InvoicesController(ISender mediator) : ControllerBase
     {
         var result = await mediator.Send(new GetInvoiceHistoryQuery(id));
         return Ok(ApiResponse<IReadOnlyCollection<InvoiceHistoryItemDto>>.Ok(result));
+    }
+
+    [HttpGet("{id:guid}/preview-pdf")]
+    [Produces("application/pdf")]
+    public async Task<IActionResult> PreviewPdf(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(new PreviewInvoicePdfQuery(id), cancellationToken);
+        Response.Headers.ContentDisposition = $"inline; filename=\"{result.Filename}\"";
+        return File(result.PdfBytes, result.ContentType);
     }
 }
 

@@ -17,6 +17,8 @@ public partial class ZenvoyceDbContext : DbContext
 
     public virtual DbSet<Danhmuchanghoa> Danhmuchanghoas { get; set; }
 
+    public virtual DbSet<Hoadonchitiet> Hoadonchitiets { get; set; }
+
     public virtual DbSet<Lichsuguithue> Lichsuguithues { get; set; }
 
     public virtual DbSet<Lichsuhoadon> Lichsuhoadons { get; set; }
@@ -38,8 +40,6 @@ public partial class ZenvoyceDbContext : DbContext
     public virtual DbSet<Thongtinhdmau> Thongtinhdmaus { get; set; }
 
     public virtual DbSet<Ttcty> Ttcties { get; set; }
-
-    public virtual DbSet<Tthanghoa> Tthanghoas { get; set; }
 
     public virtual DbSet<Tthoadon> Tthoadons { get; set; }
 
@@ -90,6 +90,41 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasForeignKey(d => d.Donviid)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("danhmuchanghoa_donviid_fkey");
+        });
+
+        modelBuilder.Entity<Hoadonchitiet>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("tthanghoa_pkey");
+
+            entity.ToTable("hoadonchitiet");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.Dongia)
+                .HasPrecision(18, 2)
+                .HasColumnName("dongia");
+            entity.Property(e => e.Hanghoaid).HasColumnName("hanghoaid");
+            entity.Property(e => e.Hoadonid).HasColumnName("hoadonid");
+            entity.Property(e => e.Soluong)
+                .HasPrecision(10, 2)
+                .HasColumnName("soluong");
+            entity.Property(e => e.Thanhtien)
+                .HasPrecision(18, 2)
+                .HasColumnName("thanhtien");
+            entity.Property(e => e.Thuesuat)
+                .HasPrecision(18, 2)
+                .HasColumnName("thuesuat");
+
+            entity.HasOne(d => d.Hanghoa).WithMany(p => p.Hoadonchitiets)
+                .HasForeignKey(d => d.Hanghoaid)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("tthanghoa_hanghoaid_fkey");
+
+            entity.HasOne(d => d.Hoadon).WithMany(p => p.Hoadonchitiets)
+                .HasForeignKey(d => d.Hoadonid)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("tthanghoa_hoadonid_fkey");
         });
 
         modelBuilder.Entity<Lichsuguithue>(entity =>
@@ -206,11 +241,12 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
-            entity.Property(e => e.Cautrucxml).HasColumnName("cautrucxml");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.CssContent).HasColumnName("css_content");
+            entity.Property(e => e.HtmlContent).HasColumnName("html_content");
             entity.Property(e => e.IsDeleted)
                 .HasDefaultValue(false)
                 .HasColumnName("is_deleted");
@@ -227,6 +263,9 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("updated_at");
             entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            entity.Property(e => e.Version)
+                .HasMaxLength(20)
+                .HasColumnName("version");
         });
 
         modelBuilder.Entity<Nguoidung>(entity =>
@@ -282,7 +321,6 @@ public partial class ZenvoyceDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("nhomquyen_pkey");
 
             entity.ToTable("nhomquyen");
-            entity.HasIndex(e => e.Tenquyen, "nhomquyen_tenquyen_key").IsUnique();
 
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
@@ -460,41 +498,6 @@ public partial class ZenvoyceDbContext : DbContext
             entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
         });
 
-        modelBuilder.Entity<Tthanghoa>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("tthanghoa_pkey");
-
-            entity.ToTable("tthanghoa");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
-            entity.Property(e => e.Dongia)
-                .HasPrecision(18, 2)
-                .HasColumnName("dongia");
-            entity.Property(e => e.Hanghoaid).HasColumnName("hanghoaid");
-            entity.Property(e => e.Hoadonid).HasColumnName("hoadonid");
-            entity.Property(e => e.Soluong)
-                .HasPrecision(10, 2)
-                .HasColumnName("soluong");
-            entity.Property(e => e.Thanhtien)
-                .HasPrecision(18, 2)
-                .HasColumnName("thanhtien");
-            entity.Property(e => e.Thuesuat)
-                .HasPrecision(18, 2)
-                .HasColumnName("thuesuat");
-
-            entity.HasOne(d => d.Hanghoa).WithMany(p => p.Tthanghoas)
-                .HasForeignKey(d => d.Hanghoaid)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("tthanghoa_hanghoaid_fkey");
-
-            entity.HasOne(d => d.Hoadon).WithMany(p => p.Tthanghoas)
-                .HasForeignKey(d => d.Hoadonid)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("tthanghoa_hoadonid_fkey");
-        });
-
         modelBuilder.Entity<Tthoadon>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("tthoadon_pkey");
@@ -539,6 +542,7 @@ public partial class ZenvoyceDbContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("updated_at");
             entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            entity.Property(e => e.XmlMetadata).HasColumnName("xml_metadata");
             entity.Property(e => e.Xmldaky).HasColumnName("xmldaky");
 
             entity.HasOne(d => d.Donvi).WithMany(p => p.Tthoadons)

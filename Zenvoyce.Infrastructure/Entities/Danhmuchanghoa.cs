@@ -31,5 +31,5 @@ public partial class Danhmuchanghoa
 
     public virtual Ttcty? Donvi { get; set; }
 
-    public virtual ICollection<Tthanghoa> Tthanghoas { get; set; } = new List<Tthanghoa>();
+    public virtual ICollection<Hoadonchitiet> Hoadonchitiets { get; set; } = new List<Hoadonchitiet>();
 }

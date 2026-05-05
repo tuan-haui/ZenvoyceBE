@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Zenvoyce.Application.Abstractions.Persistence;
+using Zenvoyce.Application.Abstractions.Services;
 using Zenvoyce.Domain.Entities;
 using Zenvoyce.Domain.Interfaces;
 
@@ -13,6 +14,9 @@ public class SignInvoiceResultDto
     public Guid Id { get; set; }
     public string Trangthai { get; set; } = string.Empty;
     public string XmlDaKy { get; set; } = string.Empty;
+    public DateTime SignedAtUtc { get; set; }
+    public string SignerSubject { get; set; } = string.Empty;
+    public string CertificateSerialNumber { get; set; } = string.Empty;
 }
 
 public class SignInvoiceCommandValidator : AbstractValidator<SignInvoiceCommand>
@@ -25,6 +29,7 @@ public class SignInvoiceCommandValidator : AbstractValidator<SignInvoiceCommand>
 
 public class SignInvoiceCommandHandler(
     IInvoiceRepository invoiceRepository,
+    IXmlInvoiceSigner xmlInvoiceSigner,
     IDateTimeProvider dateTimeProvider,
     ICurrentUserService currentUserService)
     : IRequestHandler<SignInvoiceCommand, SignInvoiceResultDto>
@@ -41,8 +46,14 @@ public class SignInvoiceCommandHandler(
             throw new InvalidOperationException($"Hóa đơn ở trạng thái '{invoice.Trangthai}' không thể ký số.");
         }
 
+        if (string.IsNullOrWhiteSpace(invoice.XmlMetadata))
+        {
+            throw new InvalidOperationException("Hóa đơn chưa có XML metadata để ký số.");
+        }
+
         var now = dateTimeProvider.UtcNow;
-        var xmlDaky = GenerateMockXml(invoice, now);
+        var signingResult = xmlInvoiceSigner.Sign(invoice.XmlMetadata);
+        var xmlDaky = signingResult.SignedXml;
 
         var history = new HoadonLichsu
         {
@@ -67,27 +78,10 @@ public class SignInvoiceCommandHandler(
         {
             Id = request.InvoiceId,
             Trangthai = SignedStatus,
-            XmlDaKy = xmlDaky
+            XmlDaKy = xmlDaky,
+            SignedAtUtc = signingResult.SignedAtUtc,
+            SignerSubject = signingResult.SignerSubject,
+            CertificateSerialNumber = signingResult.CertificateSerialNumber
         };
-    }
-
-    private static string GenerateMockXml(Hoadon invoice, DateTime signedAt)
-    {
-        return $"""
-            <?xml version="1.0" encoding="UTF-8"?>
-            <HoaDon xmlns="http://lanhoadon.gdt.gov.vn/ns/invoice/1.0">
-              <TTChung>
-                <HoaDonId>{invoice.Id}</HoaDonId>
-                <Ngaylap>{invoice.Ngaylap:yyyy-MM-dd}</Ngaylap>
-                <TongTien>{invoice.Tongtien}</TongTien>
-                <TienThue>{invoice.Tienthue}</TienThue>
-                <TongThanhToan>{invoice.Tongthanhtoan}</TongThanhToan>
-              </TTChung>
-              <ChuKySo>
-                <ThoiGianKy>{signedAt:o}</ThoiGianKy>
-                <GiaTriChuKy>MOCK_SIGNATURE_{Guid.NewGuid():N}</GiaTriChuKy>
-              </ChuKySo>
-            </HoaDon>
-            """;
     }
 }

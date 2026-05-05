@@ -16,6 +16,8 @@ public class Hoadon
     /// <summary>Hóa đơn gốc khi lập điều chỉnh/thay thế.</summary>
     public Guid? Thamchieuhoadonid { get; set; }
     public string? Xmldaky { get; set; }
+    /// <summary>XML metadata đầy đủ thông tin hoá đơn dùng để render template.</summary>
+    public string? XmlMetadata { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public Guid? CreatedBy { get; set; }

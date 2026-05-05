@@ -7,6 +7,7 @@ using Zenvoyce.Application.Features.Templates.Commands.CreateBaseTemplate;
 using Zenvoyce.Application.Features.Templates.Commands.NotifyTaxAuthority;
 using Zenvoyce.Application.Features.Templates.Commands.UpdateBaseTemplate;
 using Zenvoyce.Application.Features.Templates.DTOs;
+using Zenvoyce.Application.Features.Templates.Queries.GetBaseTemplateById;
 using Zenvoyce.Application.Features.Templates.Queries.GetBaseTemplates;
 using Zenvoyce.Application.Features.Templates.Queries.GetCompanyTemplates;
 
@@ -22,6 +23,13 @@ public class TemplatesController(ISender mediator) : ControllerBase
     {
         var result = await mediator.Send(new GetBaseTemplatesQuery());
         return Ok(ApiResponse<IReadOnlyCollection<BaseTemplateDto>>.Ok(result));
+    }
+
+    [HttpGet("base/{id:guid}")]
+    public async Task<ActionResult<ApiResponse<BaseTemplateDto>>> GetBaseTemplateById(Guid id)
+    {
+        var result = await mediator.Send(new GetBaseTemplateByIdQuery(id));
+        return Ok(ApiResponse<BaseTemplateDto>.Ok(result));
     }
 
     [HttpPost("base")]
@@ -45,7 +53,7 @@ public class TemplatesController(ISender mediator) : ControllerBase
         [FromBody] ApplyTemplateCommand command)
     {
         var result = await mediator.Send(command);
-        return Created("api/templates/company/apply", ApiResponse<CompanyTemplateDto>.Ok(result));
+        return Ok(ApiResponse<CompanyTemplateDto>.Ok(result));
     }
 
     [HttpGet("company")]

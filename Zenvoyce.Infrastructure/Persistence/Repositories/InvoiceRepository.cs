@@ -27,6 +27,7 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
                 Tongthanhtoan = invoice.Tongthanhtoan,
                 Trangthai = invoice.Trangthai,
                 Xmldaky = invoice.Xmldaky,
+                XmlMetadata = invoice.XmlMetadata,
                 CreatedAt = invoice.CreatedAt,
                 UpdatedAt = invoice.UpdatedAt,
                 CreatedBy = invoice.CreatedBy,
@@ -35,7 +36,7 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
                 Thamchieuhoadonid = invoice.Thamchieuhoadonid
             });
 
-            var detailEntities = items.Select(item => new Entities.Tthanghoa
+            var detailEntities = items.Select(item => new Entities.Hoadonchitiet
             {
                 Id = item.Id,
                 Hoadonid = item.Hoadonid,
@@ -45,7 +46,7 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
                 Thuesuat = item.Thuesuat,
                 Thanhtien = item.Thanhtien
             });
-            dbContext.Tthanghoas.AddRange(detailEntities);
+            dbContext.Hoadonchitiets.AddRange(detailEntities);
 
             dbContext.Lichsuhoadons.Add(new Entities.Lichsuhoadon
             {
@@ -320,6 +321,25 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
         }
     }
 
+    public async Task<IReadOnlyCollection<HoadonHanghoa>> GetInvoiceLinesAsync(Guid invoiceId, CancellationToken cancellationToken)
+    {
+        var entities = await dbContext.Hoadonchitiets
+            .AsNoTracking()
+            .Where(x => x.Hoadonid == invoiceId)
+            .ToListAsync(cancellationToken);
+
+        return entities.Select(x => new HoadonHanghoa
+        {
+            Id = x.Id,
+            Hoadonid = x.Hoadonid ?? Guid.Empty,
+            Hanghoaid = x.Hanghoaid ?? Guid.Empty,
+            Soluong = x.Soluong ?? 0m,
+            Dongia = x.Dongia ?? 0m,
+            Thuesuat = x.Thuesuat ?? 0m,
+            Thanhtien = x.Thanhtien ?? 0m
+        }).ToArray();
+    }
+
     private static Hoadon MapInvoice(Entities.Tthoadon entity)
     {
         return new Hoadon
@@ -336,6 +356,7 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
             Tongthanhtoan = entity.Tongthanhtoan ?? 0,
             Trangthai = entity.Trangthai ?? string.Empty,
             Xmldaky = entity.Xmldaky,
+            XmlMetadata = entity.XmlMetadata,
             CreatedAt = entity.CreatedAt ?? DateTime.MinValue,
             UpdatedAt = entity.UpdatedAt ?? DateTime.MinValue,
             CreatedBy = entity.CreatedBy,

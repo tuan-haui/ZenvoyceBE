@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Zenvoyce.Infrastructure.Entities;
 
-public partial class Tthanghoa
+public partial class Hoadonchitiet
 {
     public Guid Id { get; set; }
 

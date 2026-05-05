@@ -51,7 +51,7 @@ public class ProductRepository(ZenvoyceDbContext dbContext) : IProductRepository
 
     public Task<bool> IsUsedInInvoiceAsync(Guid productId, CancellationToken cancellationToken)
     {
-        return dbContext.Tthanghoas.AnyAsync(x => x.Hanghoaid == productId, cancellationToken);
+        return dbContext.Hoadonchitiets.AnyAsync(x => x.Hanghoaid == productId, cancellationToken);
     }
 
     public async Task AddAsync(Danhmuchanghoa product, CancellationToken cancellationToken)

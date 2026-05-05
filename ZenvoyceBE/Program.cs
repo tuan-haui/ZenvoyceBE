@@ -7,8 +7,10 @@ using Zenvoyce.Application;
 using Zenvoyce.Application.Common.Models;
 using Zenvoyce.Infrastructure;
 using Zenvoyce.Infrastructure.Security;
+using Zenvoyce.Infrastructure.Services;
 using Zenvoyce.API.Middlewares;
 using Zenvoyce.API.Swagger;
+using ZenvoyceDbContext = Zenvoyce.Infrastructure.Entities.ZenvoyceDbContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -124,6 +126,20 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ZenvoyceDbContext>();
+    var seederLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("BaseTemplateSeeder");
+    try
+    {
+        await BaseTemplateSeeder.SeedAsync(dbContext, seederLogger);
+    }
+    catch (Exception ex)
+    {
+        seederLogger.LogError(ex, "Không seed được mẫu hoá đơn mặc định.");
+    }
+}
 
 // ==========================================
 // 4. CẤU HÌNH MIDDLEWARE (PIPELINE)

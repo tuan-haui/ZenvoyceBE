@@ -19,7 +19,9 @@ public class GetBaseTemplatesQueryHandler(ITemplateRepository templateRepository
                 Tenmau = x.Tenmau,
                 Loaihoadon = x.Loaihoadon,
                 Kyhieu = x.Kyhieu,
-                Cautrucxml = x.Cautrucxml
+                HtmlContent = x.HtmlContent,
+                CssContent = x.CssContent,
+                Version = x.Version
             })
             .ToArray();
     }

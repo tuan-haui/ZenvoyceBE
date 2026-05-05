@@ -46,8 +46,10 @@ public class TemplateRepository(ZenvoyceDbContext dbContext) : ITemplateReposito
             Id = template.Id,
             Tenmau = template.Tenmau,
             Loaihoadon = template.Loaihoadon,
-            Kyhieu = template.Kyhieu,
-            Cautrucxml = template.Cautrucxml,
+            Kyhieu = template.Kyhieu ?? string.Empty,
+            HtmlContent = template.HtmlContent,
+            CssContent = template.CssContent,
+            Version = template.Version,
             CreatedAt = template.CreatedAt,
             UpdatedAt = template.UpdatedAt,
             CreatedBy = template.CreatedBy,
@@ -66,8 +68,10 @@ public class TemplateRepository(ZenvoyceDbContext dbContext) : ITemplateReposito
 
         entity.Tenmau = template.Tenmau;
         entity.Loaihoadon = template.Loaihoadon;
-        entity.Kyhieu = template.Kyhieu;
-        entity.Cautrucxml = template.Cautrucxml;
+        entity.Kyhieu = template.Kyhieu ?? string.Empty;
+        entity.HtmlContent = template.HtmlContent;
+        entity.CssContent = template.CssContent;
+        entity.Version = template.Version;
         entity.UpdatedAt = template.UpdatedAt;
         entity.UpdatedBy = template.UpdatedBy;
 
@@ -261,7 +265,9 @@ public class TemplateRepository(ZenvoyceDbContext dbContext) : ITemplateReposito
             Tenmau = entity.Tenmau,
             Loaihoadon = entity.Loaihoadon,
             Kyhieu = entity.Kyhieu,
-            Cautrucxml = entity.Cautrucxml,
+            HtmlContent = entity.HtmlContent,
+            CssContent = entity.CssContent,
+            Version = entity.Version,
             CreatedAt = entity.CreatedAt ?? DateTime.MinValue,
             UpdatedAt = entity.UpdatedAt ?? DateTime.MinValue,
             CreatedBy = entity.CreatedBy,

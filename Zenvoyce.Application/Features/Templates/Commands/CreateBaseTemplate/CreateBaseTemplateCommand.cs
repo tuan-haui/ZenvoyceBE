@@ -1,4 +1,3 @@
-using System.Xml.Linq;
 using FluentValidation;
 using MediatR;
 using Zenvoyce.Application.Abstractions.Persistence;
@@ -12,7 +11,9 @@ public record CreateBaseTemplateCommand(
     string Tenmau,
     string Loaihoadon,
     string Kyhieu,
-    string Cautrucxml) : IRequest<BaseTemplateDto>;
+    string HtmlContent,
+    string? CssContent,
+    string? Version) : IRequest<BaseTemplateDto>;
 
 public class CreateBaseTemplateCommandValidator : AbstractValidator<CreateBaseTemplateCommand>
 {
@@ -21,7 +22,8 @@ public class CreateBaseTemplateCommandValidator : AbstractValidator<CreateBaseTe
         RuleFor(x => x.Tenmau).NotEmpty().MaximumLength(255);
         RuleFor(x => x.Loaihoadon).NotEmpty().MaximumLength(100);
         RuleFor(x => x.Kyhieu).NotEmpty().MaximumLength(50);
-        RuleFor(x => x.Cautrucxml).NotEmpty();
+        RuleFor(x => x.HtmlContent).NotEmpty().MinimumLength(10);
+        RuleFor(x => x.Version).MaximumLength(20);
     }
 }
 
@@ -38,8 +40,6 @@ public class CreateBaseTemplateCommandHandler(
             throw new InvalidOperationException("Ký hiệu mẫu hóa đơn đã tồn tại.");
         }
 
-        ValidateXml(request.Cautrucxml);
-
         var now = dateTimeProvider.UtcNow;
         var template = new Mauhoadongoc
         {
@@ -47,7 +47,9 @@ public class CreateBaseTemplateCommandHandler(
             Tenmau = request.Tenmau.Trim(),
             Loaihoadon = request.Loaihoadon.Trim(),
             Kyhieu = code,
-            Cautrucxml = request.Cautrucxml.Trim(),
+            HtmlContent = request.HtmlContent,
+            CssContent = request.CssContent,
+            Version = string.IsNullOrWhiteSpace(request.Version) ? null : request.Version.Trim(),
             CreatedAt = now,
             UpdatedAt = now,
             CreatedBy = currentUserService.UserId,
@@ -63,19 +65,9 @@ public class CreateBaseTemplateCommandHandler(
             Tenmau = template.Tenmau,
             Loaihoadon = template.Loaihoadon,
             Kyhieu = template.Kyhieu,
-            Cautrucxml = template.Cautrucxml
+            HtmlContent = template.HtmlContent,
+            CssContent = template.CssContent,
+            Version = template.Version
         };
-    }
-
-    private static void ValidateXml(string xmlContent)
-    {
-        try
-        {
-            _ = XDocument.Parse(xmlContent, LoadOptions.None);
-        }
-        catch (Exception)
-        {
-            throw new InvalidOperationException("Cấu trúc XML không hợp lệ.");
-        }
     }
 }

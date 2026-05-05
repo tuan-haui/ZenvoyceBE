@@ -2,6 +2,7 @@ using FluentValidation;
 using MediatR;
 using Zenvoyce.Application.Abstractions.Persistence;
 using Zenvoyce.Application.Features.Invoices.DTOs;
+using Zenvoyce.Application.Features.Invoices.Services;
 using Zenvoyce.Domain.Entities;
 using Zenvoyce.Domain.Interfaces;
 
@@ -43,6 +44,7 @@ public class CreateInvoiceCommandHandler(
     IInvoiceRepository invoiceRepository,
     ICustomerRepository customerRepository,
     IProductRepository productRepository,
+    ICompanyRepository companyRepository,
     IDateTimeProvider dateTimeProvider,
     ICurrentUserService currentUserService)
     : IRequestHandler<CreateInvoiceCommand, CreateInvoiceResultDto>
@@ -56,6 +58,9 @@ public class CreateInvoiceCommandHandler(
         {
             throw new InvalidOperationException("Khách hàng không hợp lệ hoặc không thuộc đơn vị.");
         }
+
+        var seller = await companyRepository.GetByIdAsync(request.DonviId, cancellationToken)
+            ?? throw new InvalidOperationException("Đơn vị bán hàng không tồn tại.");
 
         if (request.ThamChieuHoadonId.HasValue)
         {
@@ -106,6 +111,8 @@ public class CreateInvoiceCommandHandler(
             UpdatedBy = currentUserService.UserId,
             IsDeleted = false
         };
+
+        invoice.XmlMetadata = InvoiceXmlBuilder.Build(invoice, lineItems, productMap, seller, customer);
 
         var history = new HoadonLichsu
         {

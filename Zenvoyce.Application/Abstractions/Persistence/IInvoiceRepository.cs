@@ -17,4 +17,6 @@ public interface IInvoiceRepository
         DateTime? fromDate,
         DateTime? toDate,
         CancellationToken cancellationToken);
+
+    Task<IReadOnlyCollection<HoadonHanghoa>> GetInvoiceLinesAsync(Guid invoiceId, CancellationToken cancellationToken);
 }

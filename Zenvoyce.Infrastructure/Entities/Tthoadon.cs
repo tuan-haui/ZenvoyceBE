@@ -43,7 +43,11 @@ public partial class Tthoadon
 
     public Guid? Thamchieuhoadonid { get; set; }
 
+    public string? XmlMetadata { get; set; }
+
     public virtual Ttcty? Donvi { get; set; }
+
+    public virtual ICollection<Hoadonchitiet> Hoadonchitiets { get; set; } = new List<Hoadonchitiet>();
 
     public virtual Ttkhachhang? Khachhang { get; set; }
 
@@ -54,6 +58,4 @@ public partial class Tthoadon
     public virtual Mauchocty? Maucty { get; set; }
 
     public virtual ICollection<Qlkyso> Qlkysos { get; set; } = new List<Qlkyso>();
-
-    public virtual ICollection<Tthanghoa> Tthanghoas { get; set; } = new List<Tthanghoa>();
 }

@@ -42,3 +42,10 @@ public class InvoiceHistoryItemDto
     public DateTime Thoigian { get; set; }
     public Guid? NguoidungId { get; set; }
 }
+
+public class InvoicePreviewResultDto
+{
+    public byte[] PdfBytes { get; set; } = Array.Empty<byte>();
+    public string Filename { get; set; } = string.Empty;
+    public string ContentType { get; set; } = "application/pdf";
+}

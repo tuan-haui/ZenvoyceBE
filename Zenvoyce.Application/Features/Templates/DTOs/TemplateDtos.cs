@@ -6,7 +6,9 @@ public class BaseTemplateDto
     public string Tenmau { get; set; } = string.Empty;
     public string? Loaihoadon { get; set; }
     public string? Kyhieu { get; set; }
-    public string? Cautrucxml { get; set; }
+    public string? HtmlContent { get; set; }
+    public string? CssContent { get; set; }
+    public string? Version { get; set; }
 }
 
 public class TemplateMetadataDto
