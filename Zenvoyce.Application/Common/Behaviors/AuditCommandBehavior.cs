@@ -33,9 +33,7 @@ public class AuditCommandBehavior<TRequest, TResponse>(
         if (ns.StartsWith(InvoicesCommandsNamespacePrefix, StringComparison.Ordinal))
             return response;
 
-        var action = type.FullName ?? type.Name;
-        if (action.Length > 255)
-            action = action[..255];
+        var action = CommandAuditActionMessageBuilder.Build(request, currentUser.UserId);
 
         var detail = CommandAuditDetailFormatter.Format(request);
         await auditLogRepository.AddSystemActivityAsync(currentUser.UserId, action, cancellationToken, detail);
