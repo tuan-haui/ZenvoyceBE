@@ -9,7 +9,7 @@ public interface IInvoiceRepository
     Task UpdateStatusAsync(Guid invoiceId, string newStatus, HoadonLichsu history, DateTime updatedAt, Guid? updatedBy, CancellationToken cancellationToken);
     Task UpdateSignedAsync(Guid invoiceId, string xmlDaky, HoadonLichsu history, DateTime updatedAt, Guid? updatedBy, CancellationToken cancellationToken);
     Task UpdatePublishedAsync(Guid invoiceId, string soHoadon, HoadonLichsu history, DateTime updatedAt, Guid? updatedBy, CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<Hoadon>> GetInvoicesAsync(Guid? khachhangId, string? trangthai, DateTime? fromDate, DateTime? toDate, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<InvoiceListItemDto>> GetInvoicesAsync(Guid? khachhangId, string? trangthai, DateTime? fromDate, DateTime? toDate, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<HoadonLichsu>> GetInvoiceHistoryAsync(Guid invoiceId, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<SalesReportRow>> GetSalesByCustomerAsync(
         Guid? donviId,

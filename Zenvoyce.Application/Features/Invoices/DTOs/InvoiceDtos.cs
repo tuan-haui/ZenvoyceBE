@@ -30,6 +30,11 @@ public class InvoiceListItemDto
     public decimal Tienthue { get; set; }
     public decimal Tongthanhtoan { get; set; }
     public string Trangthai { get; set; } = string.Empty;
+    public string TenKhachhang { get; set; } = string.Empty;
+    public string? MaSoThueKhachhang { get; set; }
+    public string? EmailKhachhang { get; set; }
+    public string TenDonvi { get; set; } = string.Empty;
+    public string? TenMau { get; set; }
 }
 
 public class InvoiceHistoryItemDto

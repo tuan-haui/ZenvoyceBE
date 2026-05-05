@@ -26,26 +26,11 @@ public class GetInvoicesQueryHandler(IInvoiceRepository invoiceRepository)
 {
     public async Task<IReadOnlyCollection<InvoiceListItemDto>> Handle(GetInvoicesQuery request, CancellationToken cancellationToken)
     {
-        var invoices = await invoiceRepository.GetInvoicesAsync(
+        return await invoiceRepository.GetInvoicesAsync(
             request.KhachhangId,
             request.Trangthai,
             request.TuNgay,
             request.DenNgay,
             cancellationToken);
-
-        return invoices.Select(x => new InvoiceListItemDto
-        {
-            Id = x.Id,
-            DonviId = x.Donviid,
-            KhachhangId = x.Khachhangid,
-            MauctyId = x.Mauctyid,
-            Kyhieu = x.Kyhieu,
-            Sohoadon = x.Sohoadon,
-            Ngaylap = x.Ngaylap,
-            Tongtien = x.Tongtien,
-            Tienthue = x.Tienthue,
-            Tongthanhtoan = x.Tongthanhtoan,
-            Trangthai = x.Trangthai
-        }).ToArray();
     }
 }

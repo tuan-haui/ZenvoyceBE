@@ -117,7 +117,7 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
         }
     }
 
-    public async Task<IReadOnlyCollection<Hoadon>> GetInvoicesAsync(
+    public async Task<IReadOnlyCollection<InvoiceListItemDto>> GetInvoicesAsync(
         Guid? khachhangId,
         string? trangthai,
         DateTime? fromDate,
@@ -149,11 +149,28 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
             query = query.Where(x => x.Ngaylap.HasValue && x.Ngaylap.Value <= toDate.Value);
         }
 
-        var entities = await query
+        return await query
             .OrderByDescending(x => x.Ngaylap)
+            .Select(x => new InvoiceListItemDto
+            {
+                Id = x.Id,
+                DonviId = x.Donviid ?? Guid.Empty,
+                KhachhangId = x.Khachhangid ?? Guid.Empty,
+                MauctyId = x.Mauctyid ?? Guid.Empty,
+                Kyhieu = x.Kyhieu,
+                Sohoadon = x.Sohoadon,
+                Ngaylap = x.Ngaylap ?? DateTime.MinValue,
+                Tongtien = x.Tongtien ?? 0m,
+                Tienthue = x.Tienthue ?? 0m,
+                Tongthanhtoan = x.Tongthanhtoan ?? 0m,
+                Trangthai = x.Trangthai ?? string.Empty,
+                TenKhachhang = x.Khachhang != null ? x.Khachhang.Tenkhachhang : string.Empty,
+                MaSoThueKhachhang = x.Khachhang != null ? x.Khachhang.Masothue : null,
+                EmailKhachhang = x.Khachhang != null ? x.Khachhang.Email : null,
+                TenDonvi = x.Donvi != null ? x.Donvi.Tendonvi : string.Empty,
+                TenMau = x.Maucty != null && x.Maucty.Maugoc != null ? x.Maucty.Maugoc.Tenmau : null
+            })
             .ToListAsync(cancellationToken);
-
-        return entities.Select(MapInvoice).ToArray();
     }
 
     public async Task<IReadOnlyCollection<HoadonLichsu>> GetInvoiceHistoryAsync(Guid invoiceId, CancellationToken cancellationToken)
