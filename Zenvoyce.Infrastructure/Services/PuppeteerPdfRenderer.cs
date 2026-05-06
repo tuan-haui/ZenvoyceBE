@@ -1,3 +1,5 @@
+using System.IO;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using PuppeteerSharp;
 using PuppeteerSharp.Media;
@@ -66,12 +68,21 @@ public sealed class PuppeteerPdfRenderer : IInvoicePdfRenderer, IAsyncDisposable
             }
 
             _logger.LogInformation("Khởi tạo headless Chromium cho PDF rendering...");
-            var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync().ConfigureAwait(false);
+            var executablePath = ResolveBrowserExecutablePath();
+            if (string.IsNullOrWhiteSpace(executablePath))
+            {
+                var browserFetcher = new BrowserFetcher();
+                await browserFetcher.DownloadAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                _logger.LogInformation("Sử dụng trình duyệt hệ thống: {ExecutablePath}", executablePath);
+            }
 
             _browser = await Puppeteer.LaunchAsync(new LaunchOptions
             {
                 Headless = true,
+                ExecutablePath = executablePath,
                 Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage" }
             }).ConfigureAwait(false);
 
@@ -99,6 +110,42 @@ public sealed class PuppeteerPdfRenderer : IInvoicePdfRenderer, IAsyncDisposable
         </body>
         </html>
         """;
+    }
+
+    private static string? ResolveBrowserExecutablePath()
+    {
+        var envPath = Environment.GetEnvironmentVariable("PUPPETEER_EXECUTABLE_PATH");
+        if (!string.IsNullOrWhiteSpace(envPath) && File.Exists(envPath))
+        {
+            return envPath;
+        }
+
+        var candidates = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? new[]
+            {
+                "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+                "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+                "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+            }
+            : new[]
+            {
+                "/usr/bin/microsoft-edge",
+                "/usr/bin/google-chrome",
+                "/usr/bin/chromium",
+                "/usr/bin/chromium-browser",
+                "/opt/google/chrome/chrome"
+            };
+
+        foreach (var path in candidates)
+        {
+            if (File.Exists(path))
+            {
+                return path;
+            }
+        }
+
+        return null;
     }
 
     public async ValueTask DisposeAsync()
