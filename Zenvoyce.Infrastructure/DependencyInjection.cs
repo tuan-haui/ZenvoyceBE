@@ -35,6 +35,12 @@ public static class DependencyInjection
             .Validate(x => x.Port > 0 && x.Port <= 65535, "SmtpSettings:Port must be in range 1-65535.")
             .Validate(x => !string.IsNullOrWhiteSpace(x.From), "SmtpSettings:From is required.")
             .ValidateOnStart();
+        services.AddOptions<VertexAiOptions>()
+            .Bind(configuration.GetSection(VertexAiOptions.SectionName))
+            .Validate(x => !string.IsNullOrWhiteSpace(x.ProjectId), "VertexAi:ProjectId is required.")
+            .Validate(x => !string.IsNullOrWhiteSpace(x.Location), "VertexAi:Location is required.")
+            .Validate(x => !string.IsNullOrWhiteSpace(x.Model), "VertexAi:Model is required.")
+            .ValidateOnStart();
         services.AddScoped<IApplicationInitializationService, ApplicationInitializationService>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
@@ -57,6 +63,7 @@ public static class DependencyInjection
         services.AddSingleton<ITemplateRenderer, HandlebarsTemplateRenderer>();
         services.AddSingleton<IInvoicePdfRenderer, PuppeteerPdfRenderer>();
         services.AddScoped<IInvoiceEmailService, SmtpInvoiceEmailService>();
+        services.AddHttpClient<IVertexAiService, VertexAiService>();
         services.AddSingleton<IXmlInvoiceSigner, XmlInvoiceSigner>();
 
         return services;
