@@ -82,17 +82,24 @@ public sealed class PuppeteerPdfRenderer : IInvoicePdfRenderer, IAsyncDisposable
 
             try
             {
-                _browser = await Puppeteer.LaunchAsync(new LaunchOptions
+                _browser = await Puppeteer.LaunchAsync(new LaunchOptions()
                 {
                     Headless = true,
-                    ExecutablePath = executablePath,
-                    DumpIO = true,
-                    Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage" }
+                    // Trỏ thẳng đến thực thi của Edge trên Azure Windows
+                    ExecutablePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+                    Args = new[]
+                    {
+                        "--no-sandbox",
+                        "--disable-setuid-sandbox",
+                        "--disable-dev-shm-usage",
+                        "--disable-gpu"
+                    }
                 }).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Không thể launch browser. ExecutablePath={ExecutablePath}", executablePath ?? "(default)");
+                _logger.LogError(ex, "Không thể launch browser. ExecutablePath={ExecutablePath}",
+                    executablePath ?? "(default)");
                 throw;
             }
 
@@ -108,18 +115,18 @@ public sealed class PuppeteerPdfRenderer : IInvoicePdfRenderer, IAsyncDisposable
     {
         var styleTag = string.IsNullOrWhiteSpace(css) ? string.Empty : $"<style>{css}</style>";
         return $"""
-        <!DOCTYPE html>
-        <html lang="vi">
-        <head>
-        <meta charset="utf-8" />
-        <title>Invoice</title>
-        {styleTag}
-        </head>
-        <body>
-        {body}
-        </body>
-        </html>
-        """;
+                <!DOCTYPE html>
+                <html lang="vi">
+                <head>
+                <meta charset="utf-8" />
+                <title>Invoice</title>
+                {styleTag}
+                </head>
+                <body>
+                {body}
+                </body>
+                </html>
+                """;
     }
 
     private static string? ResolveBrowserExecutablePath()
