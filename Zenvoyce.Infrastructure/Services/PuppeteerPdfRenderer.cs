@@ -71,6 +71,7 @@ public sealed class PuppeteerPdfRenderer : IInvoicePdfRenderer, IAsyncDisposable
             var executablePath = ResolveBrowserExecutablePath();
             if (string.IsNullOrWhiteSpace(executablePath))
             {
+                _logger.LogWarning("Không tìm thấy browser hệ thống. Thử tải Chromium mặc định của PuppeteerSharp.");
                 var browserFetcher = new BrowserFetcher();
                 await browserFetcher.DownloadAsync().ConfigureAwait(false);
             }
@@ -79,12 +80,21 @@ public sealed class PuppeteerPdfRenderer : IInvoicePdfRenderer, IAsyncDisposable
                 _logger.LogInformation("Sử dụng trình duyệt hệ thống: {ExecutablePath}", executablePath);
             }
 
-            _browser = await Puppeteer.LaunchAsync(new LaunchOptions
+            try
             {
-                Headless = true,
-                ExecutablePath = executablePath,
-                Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage" }
-            }).ConfigureAwait(false);
+                _browser = await Puppeteer.LaunchAsync(new LaunchOptions
+                {
+                    Headless = true,
+                    ExecutablePath = executablePath,
+                    DumpIO = true,
+                    Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage" }
+                }).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể launch browser. ExecutablePath={ExecutablePath}", executablePath ?? "(default)");
+                throw;
+            }
 
             return _browser;
         }
