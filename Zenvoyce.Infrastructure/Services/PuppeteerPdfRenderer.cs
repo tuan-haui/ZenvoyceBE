@@ -82,18 +82,12 @@ public sealed class PuppeteerPdfRenderer : IInvoicePdfRenderer, IAsyncDisposable
 
             try
             {
-                _browser = await Puppeteer.LaunchAsync(new LaunchOptions()
+                _browser = await Puppeteer.LaunchAsync(new LaunchOptions
                 {
                     Headless = true,
-                    // Trỏ thẳng đến thực thi của Edge trên Azure Windows
-                    ExecutablePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-                    Args = new[]
-                    {
-                        "--no-sandbox",
-                        "--disable-setuid-sandbox",
-                        "--disable-dev-shm-usage",
-                        "--disable-gpu"
-                    }
+                    ExecutablePath = executablePath,
+                    DumpIO = true,
+                    Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage" }
                 }).ConfigureAwait(false);
             }
             catch (Exception ex)
