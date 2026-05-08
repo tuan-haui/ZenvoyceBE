@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Zenvoyce.Application.Common.Models;
 using Zenvoyce.Application.Features.Templates.Commands.ApplyTemplate;
 using Zenvoyce.Application.Features.Templates.Commands.CreateBaseTemplate;
+using Zenvoyce.Application.Features.Templates.Commands.DeleteBaseTemplate;
 using Zenvoyce.Application.Features.Templates.Commands.NotifyTaxAuthority;
 using Zenvoyce.Application.Features.Templates.Commands.UpdateBaseTemplate;
 using Zenvoyce.Application.Features.Templates.DTOs;
@@ -46,6 +47,13 @@ public class TemplatesController(ISender mediator) : ControllerBase
     {
         var result = await mediator.Send(command with { Id = id });
         return Ok(ApiResponse<BaseTemplateDto>.Ok(result));
+    }
+
+    [HttpDelete("base/{id:guid}")]
+    public async Task<ActionResult<ApiResponse<object?>>> DeleteBaseTemplate(Guid id)
+    {
+        await mediator.Send(new DeleteBaseTemplateCommand(id));
+        return Ok(ApiResponse<object?>.Ok(null));
     }
 
     [HttpPost("company/apply")]

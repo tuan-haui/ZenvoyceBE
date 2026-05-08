@@ -29,7 +29,7 @@ public class TemplateRepository(ZenvoyceDbContext dbContext) : ITemplateReposito
     {
         var template = await dbContext.Mauhoadongocs
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted != true, cancellationToken);
 
         return template is null ? null : MapToDomain(template);
     }
@@ -78,9 +78,21 @@ public class TemplateRepository(ZenvoyceDbContext dbContext) : ITemplateReposito
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task DeleteBaseTemplateAsync(Guid id, DateTime updatedAt, Guid? updatedBy, CancellationToken cancellationToken)
+    {
+        var entity = await dbContext.Mauhoadongocs.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
+            ?? throw new KeyNotFoundException("Không tìm thấy mẫu hóa đơn gốc.");
+
+        entity.IsDeleted = true;
+        entity.UpdatedAt = updatedAt;
+        entity.UpdatedBy = updatedBy;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public Task<bool> BaseTemplateExistsAsync(Guid baseTemplateId, CancellationToken cancellationToken)
     {
-        return dbContext.Mauhoadongocs.AnyAsync(x => x.Id == baseTemplateId, cancellationToken);
+        return dbContext.Mauhoadongocs.AnyAsync(x => x.Id == baseTemplateId && x.IsDeleted != true, cancellationToken);
     }
 
     public Task<bool> CompanyExistsAsync(Guid companyId, CancellationToken cancellationToken)

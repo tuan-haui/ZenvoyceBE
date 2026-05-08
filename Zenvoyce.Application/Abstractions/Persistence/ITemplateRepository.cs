@@ -10,6 +10,7 @@ public interface ITemplateRepository
     Task<bool> IsBaseTemplateInUseAsync(Guid baseTemplateId, CancellationToken cancellationToken);
     Task AddBaseTemplateAsync(Mauhoadongoc template, CancellationToken cancellationToken);
     Task UpdateBaseTemplateAsync(Mauhoadongoc template, CancellationToken cancellationToken);
+    Task DeleteBaseTemplateAsync(Guid id, DateTime updatedAt, Guid? updatedBy, CancellationToken cancellationToken);
 
     Task<bool> BaseTemplateExistsAsync(Guid baseTemplateId, CancellationToken cancellationToken);
     Task<bool> CompanyExistsAsync(Guid companyId, CancellationToken cancellationToken);
