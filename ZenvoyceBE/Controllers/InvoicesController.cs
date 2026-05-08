@@ -1,3 +1,4 @@
+using System.Text;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ using Zenvoyce.Application.Features.Invoices.Commands.CreateInvoice;
 using Zenvoyce.Application.Features.Invoices.Commands.ForwardInvoice;
 using Zenvoyce.Application.Features.Invoices.Commands.PublishInvoice;
 using Zenvoyce.Application.Features.Invoices.Commands.SignInvoice;
+using Zenvoyce.Application.Features.Invoices.Commands.VerifyInvoiceXmlSignature;
 using Zenvoyce.Application.Features.Invoices.Commands.SendInvoiceEmail;
 using Zenvoyce.Application.Features.Invoices.DTOs;
 using Zenvoyce.Application.Features.Invoices.Queries.GetInvoiceHistory;
@@ -81,6 +83,29 @@ public class InvoicesController(ISender mediator) : ControllerBase
         return Ok(ApiResponse<StringMessageDto>.Ok(new StringMessageDto("Hóa đơn đã được hủy.")));
     }
 
+    [HttpPost("verify-signature-xml")]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<ApiResponse<VerifyInvoiceXmlSignatureResultDto>>> VerifyInvoiceXmlSignature(
+        [FromForm] VerifyInvoiceXmlSignatureRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request.XmlFile?.Length <= 0)
+        {
+            return BadRequest(ApiResponse<VerifyInvoiceXmlSignatureResultDto>.Fail("Vui lòng tải lên file XML hóa đơn."));
+        }
+
+        string xmlContent;
+        using (var reader = new StreamReader(request.XmlFile!.OpenReadStream(), Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
+        {
+            xmlContent = await reader.ReadToEndAsync(cancellationToken);
+        }
+
+        var result = await mediator.Send(
+            new VerifyInvoiceXmlSignatureCommand(xmlContent, request.XmlFile!.FileName),
+            cancellationToken);
+        return Ok(ApiResponse<VerifyInvoiceXmlSignatureResultDto>.Ok(result));
+    }
+
     [HttpGet]
     public async Task<ActionResult<ApiResponse<IReadOnlyCollection<InvoiceListItemDto>>>> GetInvoices(
         [FromQuery] Guid? khachhangId,
@@ -110,3 +135,4 @@ public class InvoicesController(ISender mediator) : ControllerBase
 }
 
 public record CancelInvoiceRequest(string LyDo);
+public sealed record VerifyInvoiceXmlSignatureRequest(IFormFile? XmlFile);

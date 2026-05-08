@@ -32,7 +32,7 @@ public class XmlInvoiceSigner : IXmlInvoiceSigner
 
         var signedAtUtc = DateTime.UtcNow;
         var signerSubject = string.IsNullOrWhiteSpace(options.SignerName) ? cert.Subject : options.SignerName;
-        var certificateSerial = cert.SerialNumber ?? string.Empty;
+        var certificateSerial = cert.SerialNumber;
 
         AppendInternalSignatureMetadata(xmlDoc, signedAtUtc, signerSubject, certificateSerial);
 
@@ -67,6 +67,79 @@ public class XmlInvoiceSigner : IXmlInvoiceSigner
         };
     }
 
+    public VerifyXmlInvoiceResult Verify(string xmlContent)
+    {
+        var errors = new List<string>();
+        if (string.IsNullOrWhiteSpace(xmlContent))
+        {
+            errors.Add("Nội dung XML rỗng.");
+            return BuildInvalidResult(errors, "Xác thực chữ ký số thất bại.");
+        }
+
+        var xmlDoc = new XmlDocument { PreserveWhitespace = true };
+        try
+        {
+            xmlDoc.LoadXml(xmlContent);
+        }
+        catch (XmlException)
+        {
+            errors.Add("Nội dung XML không hợp lệ.");
+            return BuildInvalidResult(errors, "Xác thực chữ ký số thất bại.");
+        }
+
+        var signatureNode = FindSignatureNode(xmlDoc);
+        if (signatureNode is null)
+        {
+            errors.Add("Không tìm thấy chữ ký số XMLDSig.");
+            return BuildInvalidResult(errors, "Xác thực chữ ký số thất bại.");
+        }
+
+        var signedXml = new SignedXml(xmlDoc);
+        try
+        {
+            signedXml.LoadXml(signatureNode);
+        }
+        catch (CryptographicException)
+        {
+            errors.Add("Không đọc được thông tin chữ ký số trong XML.");
+            return BuildInvalidResult(errors, "Xác thực chữ ký số thất bại.");
+        }
+
+        var signingCertificate = ExtractSigningCertificate(signedXml);
+        if (signingCertificate is null)
+        {
+            errors.Add("Không tìm thấy chứng thư số trong chữ ký XML.");
+            return BuildInvalidResult(errors, "Xác thực chữ ký số thất bại.");
+        }
+
+        bool isValid;
+        try
+        {
+            isValid = signedXml.CheckSignature(signingCertificate, verifySignatureOnly: true);
+        }
+        catch (CryptographicException)
+        {
+            errors.Add("Chữ ký số không hợp lệ hoặc dữ liệu XML đã bị thay đổi.");
+            return BuildInvalidResult(errors, "Xác thực chữ ký số thất bại.", signingCertificate, TryReadSignedAtUtc(xmlDoc));
+        }
+
+        if (!isValid)
+        {
+            errors.Add("Chữ ký số không hợp lệ hoặc dữ liệu XML đã bị thay đổi.");
+            return BuildInvalidResult(errors, "Xác thực chữ ký số thất bại.", signingCertificate, TryReadSignedAtUtc(xmlDoc));
+        }
+
+        return new VerifyXmlInvoiceResult
+        {
+            IsValid = true,
+            Message = "Xác thực chữ ký số thành công.",
+            SignerSubject = signingCertificate.Subject,
+            CertificateSerialNumber = signingCertificate.SerialNumber,
+            SignedAtUtc = TryReadSignedAtUtc(xmlDoc),
+            Errors = []
+        };
+    }
+
     private static void AppendInternalSignatureMetadata(XmlDocument xmlDoc, DateTime signedAtUtc, string signerSubject, string certificateSerial)
     {
         var root = xmlDoc.DocumentElement ?? throw new InvalidOperationException("XML không có phần tử gốc để ký.");
@@ -89,6 +162,71 @@ public class XmlInvoiceSigner : IXmlInvoiceSigner
         {
             root.AppendChild(metadataNode);
         }
+    }
+
+    private static VerifyXmlInvoiceResult BuildInvalidResult(
+        IReadOnlyCollection<string> errors,
+        string message,
+        X509Certificate2? certificate = null,
+        DateTime? signedAtUtc = null)
+    {
+        return new VerifyXmlInvoiceResult
+        {
+            IsValid = false,
+            Message = message,
+            SignerSubject = certificate?.Subject ?? string.Empty,
+            CertificateSerialNumber = certificate?.SerialNumber ?? string.Empty,
+            SignedAtUtc = signedAtUtc,
+            Errors = errors
+        };
+    }
+
+    private static XmlElement? FindSignatureNode(XmlDocument xmlDoc)
+    {
+        var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
+        nsmgr.AddNamespace("ds", SignedXml.XmlDsigNamespaceUrl);
+        return xmlDoc.SelectSingleNode("//ds:Signature", nsmgr) as XmlElement;
+    }
+
+    private static X509Certificate2? ExtractSigningCertificate(SignedXml signedXml)
+    {
+        foreach (var clause in signedXml.KeyInfo)
+        {
+            if (clause is not KeyInfoX509Data x509Data)
+            {
+                continue;
+            }
+
+            if (x509Data.Certificates is null)
+            {
+                continue;
+            }
+
+            foreach (var certificate in x509Data.Certificates)
+            {
+                if (certificate is X509Certificate cert)
+                {
+                    return new X509Certificate2(cert);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static DateTime? TryReadSignedAtUtc(XmlDocument xmlDoc)
+    {
+        var signedAtText = xmlDoc.DocumentElement?.SelectSingleNode("KySoNoiBo/SignedAtUtc")?.InnerText;
+        if (DateTime.TryParse(
+            signedAtText,
+            null,
+            System.Globalization.DateTimeStyles.RoundtripKind,
+            out var signedAtUtc))
+        {
+            return signedAtUtc;
+        }
+
+        return null;
     }
 
     private X509Certificate2 LoadCertificate()
