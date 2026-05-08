@@ -338,3 +338,5 @@ ASALocalRun/
 
 appsettings.json
 appsettings.Development.json
+
+service-account.json
