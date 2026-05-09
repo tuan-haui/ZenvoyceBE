@@ -10,5 +10,6 @@ public interface IProductRepository
     Task<bool> NameExistsInCompanyAsync(Guid donviId, string productName, Guid? excludingId, CancellationToken cancellationToken);
     Task<bool> IsUsedInInvoiceAsync(Guid productId, CancellationToken cancellationToken);
     Task AddAsync(Danhmuchanghoa product, CancellationToken cancellationToken);
+    Task AddRangeAsync(IEnumerable<Danhmuchanghoa> products, CancellationToken cancellationToken);
     Task UpdateAsync(Danhmuchanghoa product, CancellationToken cancellationToken);
 }

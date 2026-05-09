@@ -48,8 +48,7 @@ public class PublishInvoiceCommandHandler(
 
         var now = dateTimeProvider.UtcNow;
 
-        // Mock: gọi API Tổng cục Thuế → sinh số hóa đơn chính thức
-        var soHoadon = GenerateSoHoadon(now);
+        var soHoadon = invoice.Sohoadon ?? GenerateSoHoadon(now);
 
         var history = new HoadonLichsu
         {

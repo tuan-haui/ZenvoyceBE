@@ -382,4 +382,16 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
             Thamchieuhoadonid = entity.Thamchieuhoadonid
         };
     }
+
+    public async Task<int> GetInvoiceCountByDateAsync(Guid donviId, DateTime date, CancellationToken cancellationToken)
+    {
+        var startOfDay = date.Date;
+        var endOfDay = startOfDay.AddDays(1);
+        
+        return await dbContext.Tthoadons
+            .CountAsync(x => x.Donviid == donviId && 
+                             x.Ngaylap >= startOfDay && 
+                             x.Ngaylap < endOfDay, 
+                        cancellationToken);
+    }
 }

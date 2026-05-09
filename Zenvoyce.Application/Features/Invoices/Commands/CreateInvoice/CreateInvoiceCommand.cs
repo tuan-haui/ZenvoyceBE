@@ -12,7 +12,6 @@ public record CreateInvoiceCommand(
     Guid DonviId,
     Guid KhachhangId,
     Guid MauctyId,
-    string? Kyhieu,
     DateTime Ngaylap,
     IReadOnlyCollection<InvoiceLineRequestDto> Hanghoas,
     Guid? ThamChieuHoadonId = null) : IRequest<CreateInvoiceResultDto>;
@@ -86,6 +85,11 @@ public class CreateInvoiceCommandHandler(
 
         var invoiceId = Guid.NewGuid();
         var now = dateTimeProvider.UtcNow;
+        var localNow = now.AddHours(7); // Vietnam timezone for display/logic if needed, or use request.Ngaylap
+        
+        var todayCount = await invoiceRepository.GetInvoiceCountByDateAsync(request.DonviId, request.Ngaylap, cancellationToken);
+        var nextNumber = todayCount + 1;
+        var generatedSoHoadon = $"HD{nextNumber:D2}-{request.Ngaylap:ddMMyyyy}";
 
         var lineItems = BuildLineItems(invoiceId, request.Hanghoas, productMap);
         var (tongtien, tienthue, tongthanhtoan) = CalculateTotals(lineItems);
@@ -96,8 +100,8 @@ public class CreateInvoiceCommandHandler(
             Donviid = request.DonviId,
             Khachhangid = request.KhachhangId,
             Mauctyid = request.MauctyId,
-            Kyhieu = string.IsNullOrWhiteSpace(request.Kyhieu) ? null : request.Kyhieu.Trim(),
-            Sohoadon = null,
+            Kyhieu = null,
+            Sohoadon = generatedSoHoadon,
             Ngaylap = request.Ngaylap,
             Tongtien = tongtien,
             Tienthue = tienthue,

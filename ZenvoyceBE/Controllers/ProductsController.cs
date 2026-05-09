@@ -7,6 +7,7 @@ using Zenvoyce.Application.Features.Products.Commands.DeleteProduct;
 using Zenvoyce.Application.Features.Products.Commands.UpdateProduct;
 using Zenvoyce.Application.Features.Products.DTOs;
 using Zenvoyce.Application.Features.Products.Queries.GetProductsByCompany;
+using Zenvoyce.Application.Features.Products.Commands.ImportProducts;
 
 namespace Zenvoyce.API.Controllers;
 
@@ -42,5 +43,18 @@ public class ProductsController(ISender mediator) : ControllerBase
     {
         await mediator.Send(new DeleteProductCommand(id));
         return Ok(ApiResponse<object?>.Ok(null));
+    }
+
+    [HttpPost("{donviId:guid}/import")]
+    public async Task<ActionResult<ApiResponse<int>>> ImportProducts(Guid donviId, IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(ApiResponse<int>.Fail("Vui lòng chọn file hợp lệ."));
+        }
+
+        using var stream = file.OpenReadStream();
+        var result = await mediator.Send(new ImportProductsCommand(donviId, stream));
+        return Ok(ApiResponse<int>.Ok(result));
     }
 }

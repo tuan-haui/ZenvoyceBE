@@ -76,6 +76,28 @@ public class ProductRepository(ZenvoyceDbContext dbContext) : IProductRepository
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task AddRangeAsync(IEnumerable<Danhmuchanghoa> products, CancellationToken cancellationToken)
+    {
+        var entities = products.Select(product => new Entities.Danhmuchanghoa
+        {
+            Id = product.Id,
+            Donviid = product.Donviid,
+            Tenhanghoa = product.Tenhanghoa,
+            Sku = product.Sku,
+            Donvitinh = product.Donvitinh,
+            Dongia = product.Dongia,
+            Thuesuat = product.Thuesuat,
+            CreatedAt = product.CreatedAt,
+            UpdatedAt = product.UpdatedAt,
+            CreatedBy = product.CreatedBy,
+            UpdatedBy = product.UpdatedBy,
+            IsDeleted = product.IsDeleted
+        });
+
+        dbContext.Danhmuchanghoas.AddRange(entities);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task UpdateAsync(Danhmuchanghoa product, CancellationToken cancellationToken)
     {
         var entity = await dbContext.Danhmuchanghoas.FirstOrDefaultAsync(x => x.Id == product.Id, cancellationToken)

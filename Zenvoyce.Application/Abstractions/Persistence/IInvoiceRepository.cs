@@ -19,4 +19,5 @@ public interface IInvoiceRepository
         CancellationToken cancellationToken);
 
     Task<IReadOnlyCollection<HoadonHanghoa>> GetInvoiceLinesAsync(Guid invoiceId, CancellationToken cancellationToken);
+    Task<int> GetInvoiceCountByDateAsync(Guid donviId, DateTime date, CancellationToken cancellationToken);
 }
