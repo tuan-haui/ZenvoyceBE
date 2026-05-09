@@ -1,0 +1,49 @@
+<HoaDon>
+  <Id>ce814c6a-ecb7-4422-ae4d-552569332338</Id>
+  <KyHieu>HD03-06052026</KyHieu>
+  <SoHoaDon></SoHoaDon>
+  <NgayLap>2026-05-06</NgayLap>
+  <TrangThai>Draft</TrangThai>
+  <NguoiBan>
+    <Ten>Công Ty TNHH Zenvoyce Việt Nam</Ten>
+    <MST>024204005326</MST>
+    <DiaChi>28 Nhổn, Nam Từ Liêm</DiaChi>
+    <DienThoai>0367111302</DienThoai>
+    <Email>tuanphuong130204@gmail.com</Email>
+  </NguoiBan>
+  <NguoiMua>
+    <Ten>Ngô Thuý Vy</Ten>
+    <MST>02420412311313</MST>
+    <Email>ngothuyvy3062004@gmail.com</Email>
+    <DienThoai>0332434664</DienThoai>
+  </NguoiMua>
+  <DanhSachHangHoa>
+    <HangHoa STT="1">
+      <Ten>Card đồ hoạ NVIDIA 4060Ti 8GB RAM</Ten>
+      <DonViTinh>Chiếc</DonViTinh>
+      <SoLuong>2</SoLuong>
+      <DonGia>12520000</DonGia>
+      <ThueSuat>10</ThueSuat>
+      <ThanhTien>25040000</ThanhTien>
+    </HangHoa>
+    <HangHoa STT="2">
+      <Ten>Samsung Galaxy S25 Ultra</Ten>
+      <DonViTinh>Chiếc</DonViTinh>
+      <SoLuong>1</SoLuong>
+      <DonGia>26200000</DonGia>
+      <ThueSuat>10</ThueSuat>
+      <ThanhTien>26200000</ThanhTien>
+    </HangHoa>
+    <HangHoa STT="3">
+      <Ten>iPhone 17 Pro Max</Ten>
+      <DonViTinh>Chiếc</DonViTinh>
+      <SoLuong>1</SoLuong>
+      <DonGia>43200000</DonGia>
+      <ThueSuat>10</ThueSuat>
+      <ThanhTien>43200000</ThanhTien>
+    </HangHoa>
+  </DanhSachHangHoa>
+  <TongTienHang>94440000</TongTienHang>
+  <TienThue>9444000</TienThue>
+  <TongThanhToan>103884000</TongThanhToan>
+<KySoNoiBo><SignedAtUtc>2026-05-06T01:38:23.9696613Z</SignedAtUtc><SignerSubject>Công Ty TNHH Zenvoyce Việt Nam</SignerSubject><CertificateSerial>00872CA129A979A8AE</CertificateSerial></KySoNoiBo><Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /><SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><DigestValue>IevYl8jC1fRd8qi7ubtW2QuMMjgFFLwtFCPcQ46Hj1Q=</DigestValue></Reference></SignedInfo><SignatureValue>iygoCa70X8fmJ9qNJ0hdZejmbvCJhM7WLEv/4uTmx1tm2DvJfCDt3CeNtBV2nQ0YjicO6sucfHFf+JB3r93LgxTeyg2VN632XPaqxvHkXDIuK10DBQoVnzc39F+CizMqEHKPV0mmjPTyAeyivsRZEYahiORQ0v4MsoRzVrt2AqD1vkQDl2WoS0yModJUCT/JevLecOMEstZqzEY6qhcPf4euEYncjn841IJrdqCIMUE1ucsWhwY9tGrm/gtKLogIA2XxTOXhXhXTu1pXHt8BvJywRlSXl+5otqUWJrju4Hht1U0svrouDvi4VCJXSF3pFsYCc+vAzf6NNurftz736A==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIDZTCCAk2gAwIBAgIJAIcsoSmpeaiuMA0GCSqGSIb3DQEBCwUAMFMxCzAJBgNVBAYTAlZOMRAwDgYDVQQLEwdJbnZvaWNlMREwDwYDVQQKEwhaZW52b3ljZTEfMB0GA1UEAxMWU2ltdWxhdGVkSW52b2ljZVNpZ25lcjAeFw0yNjA1MDUxODAzNTNaFw0yOTA1MDUxODA4NTNaMFMxCzAJBgNVBAYTAlZOMRAwDgYDVQQLEwdJbnZvaWNlMREwDwYDVQQKEwhaZW52b3ljZTEfMB0GA1UEAxMWU2ltdWxhdGVkSW52b2ljZVNpZ25lcjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAM6qsLby6aJsL0ge7bLE5fThsZpKZ4fNvUyxiSQoE4CG2+ORDhCv1q7dqGazZr6qNW0wlSRmvnUVa+HDUrEgSSk47qyNS9SQR5q3IaFj1FYRQYZk+lDRr7f2gAO5I9iD0AOOywTukbPgumnEY+ItWWj0t9qsriR2rSwjhK14Lob0hfB5hanG4kb4DEo9s0kwvzP18/Mo/b/9CdH7tsQd1Q3BSj0nnRGaEeWAINrD4cATl56Fh2GULoFcjGN+GY1kLHMFCKBS8vh0muri4e88peoSqC8xS6Mb3Y3qjbawdN950wD+NpqUg31ZgnCbXvvz60/z6h+3rlu0QU3+15cJty0CAwEAAaM8MDowDgYDVR0PAQH/BAQDAgbAMAkGA1UdEwQCMAAwHQYDVR0OBBYEFP5QbbZza7mf7c10Xxrp2tyG70tFMA0GCSqGSIb3DQEBCwUAA4IBAQCD1+HFLDHFSgfHcvI2v6D9x7uU+lLnIAbJIVxW4g/zzUyUpOqlK2IvymQnp+OFAMoYs0Jvwf079eWSRJ2g9XD66/TyBXW+k/Om2HARruVthVusScVF6S8g+FxxraVdn9T4OHiNRuCmjDuWHCaY7leahfKBVxzCcxWm1qkXuHF3wBG7zDUpN5pUabU/TB1sIm74WZr+jtW4Y8AAvR/4xUE+Zt4vzU80ZCbu6u/55dXhdGvgLtvMJYrdLKYfz1OzzK53zpLNlXHkux4gCV0OiXZb5AecOEuChIZg5tulgSwaSp82pPYJp/0ypYX0dlzhOf1JOxH081O8S2X8DiJay/eE</X509Certificate></X509Data></KeyInfo></Signature></HoaDon>

@@ -17,17 +17,27 @@ public class BaseTemplateSeeder
         ILogger logger,
         CancellationToken cancellationToken = default)
     {
-        var exists = await dbContext.Mauhoadongocs
-            .AnyAsync(x => x.Kyhieu == DefaultKyhieu, cancellationToken);
-
-        if (exists)
-        {
-            return;
-        }
-
         var html = DefaultMauhoadon1Html;
         var css = DefaultMauhoadon1Css;
         var now = DateTime.UtcNow;
+
+        var existingTemplate = await dbContext.Mauhoadongocs
+            .FirstOrDefaultAsync(x => x.Kyhieu == DefaultKyhieu, cancellationToken);
+
+        if (existingTemplate != null)
+        {
+            if (existingTemplate.HtmlContent != html || existingTemplate.CssContent != css)
+            {
+                existingTemplate.HtmlContent = html;
+                existingTemplate.CssContent = css;
+                existingTemplate.UpdatedAt = now;
+                await dbContext.SaveChangesAsync(cancellationToken);
+                logger.LogInformation("Đã cập nhật mẫu hoá đơn mặc định '{Kyhieu}'.", DefaultKyhieu);
+            }
+            return;
+        }
+
+
 
         dbContext.Mauhoadongocs.Add(new Entities.Mauhoadongoc
         {
@@ -101,8 +111,21 @@ public class BaseTemplateSeeder
     </div>
 
     <div class="signature">
-        <div>Người mua</div>
-        <div>Người bán</div>
+        <div class="center">
+            <b>Người mua</b><br />
+            (Ký, ghi rõ họ tên)
+        </div>
+        <div class="center">
+            <b>Người bán</b><br />
+            (Ký, đóng dấu, ghi rõ họ tên)<br />
+            {{#if is_signed}}
+            <div class="signature-box">
+                <b>Ký bởi:</b> {{signer_subject}}<br />
+                <b>Thời gian ký:</b> {{signed_at}}<br />
+                <b>Serial chứng thư:</b> {{certificate_serial}}
+            </div>
+            {{/if}}
+        </div>
     </div>
 </div>
 """;
@@ -147,6 +170,17 @@ th, td {
     margin-top: 30px;
     display: flex;
     justify-content: space-between;
+}
+
+.signature-box {
+    margin-top: 10px;
+    padding: 10px;
+    border: 2px solid #e74c3c;
+    color: #e74c3c;
+    text-align: left;
+    display: inline-block;
+    border-radius: 4px;
+    background-color: #fdf2f2;
 }
 """;
 }
