@@ -132,6 +132,15 @@ public class InvoicesController(ISender mediator) : ControllerBase
         Response.Headers.ContentDisposition = $"inline; filename=\"{result.Filename}\"";
         return File(result.PdfBytes, result.ContentType);
     }
+
+    [HttpPost("preview-pdf-from-data")]
+    [Produces("application/pdf")]
+    public async Task<IActionResult> PreviewPdfFromData([FromBody] Zenvoyce.Application.Features.Invoices.Queries.PreviewInvoicePdfFromData.PreviewInvoicePdfFromDataQuery query, CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(query, cancellationToken);
+        Response.Headers.ContentDisposition = $"inline; filename=\"{result.Filename}\"";
+        return File(result.PdfBytes, result.ContentType);
+    }
 }
 
 public record CancelInvoiceRequest(string LyDo);
