@@ -25,10 +25,10 @@ public class DeleteBaseTemplateCommandHandler(
         var template = await templateRepository.GetBaseTemplateByIdAsync(request.Id, cancellationToken)
             ?? throw new KeyNotFoundException("Không tìm thấy mẫu hóa đơn gốc.");
 
-        if (await templateRepository.IsBaseTemplateInUseAsync(template.Id, cancellationToken))
-        {
-            throw new InvalidOperationException("Không thể xóa mẫu hóa đơn gốc vì đã được đưa vào sử dụng.");
-        }
+        //if (await templateRepository.IsBaseTemplateInUseAsync(template.Id, cancellationToken))
+        //{
+        //    throw new InvalidOperationException("Không thể xóa mẫu hóa đơn gốc vì đã được đưa vào sử dụng.");
+        //}
 
         await templateRepository.DeleteBaseTemplateAsync(
             template.Id,
