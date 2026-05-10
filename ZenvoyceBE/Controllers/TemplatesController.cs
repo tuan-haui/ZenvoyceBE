@@ -5,6 +5,7 @@ using Zenvoyce.Application.Common.Models;
 using Zenvoyce.Application.Features.Templates.Commands.ApplyTemplate;
 using Zenvoyce.Application.Features.Templates.Commands.CreateBaseTemplate;
 using Zenvoyce.Application.Features.Templates.Commands.DeleteBaseTemplate;
+using Zenvoyce.Application.Features.Templates.Commands.CancelTemplate;
 using Zenvoyce.Application.Features.Templates.Commands.NotifyTaxAuthority;
 using Zenvoyce.Application.Features.Templates.Commands.UpdateBaseTemplate;
 using Zenvoyce.Application.Features.Templates.DTOs;
@@ -80,6 +81,13 @@ public class TemplatesController(ISender mediator) : ControllerBase
     public async Task<ActionResult<ApiResponse<TemplateStatusHistoryDto>>> NotifyTaxAuthority(Guid id)
     {
         var result = await mediator.Send(new NotifyTaxAuthorityCommand(id));
+        return Ok(ApiResponse<TemplateStatusHistoryDto>.Ok(result));
+    }
+
+    [HttpPost("cancel/{id:guid}")]
+    public async Task<ActionResult<ApiResponse<TemplateStatusHistoryDto>>> CancelTemplate(Guid id)
+    {
+        var result = await mediator.Send(new CancelTemplateCommand(id));
         return Ok(ApiResponse<TemplateStatusHistoryDto>.Ok(result));
     }
 }
