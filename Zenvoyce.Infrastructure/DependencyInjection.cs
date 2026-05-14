@@ -11,6 +11,7 @@ using Zenvoyce.Infrastructure.Persistence.Repositories;
 using Zenvoyce.Infrastructure.Options;
 using Zenvoyce.Infrastructure.Security;
 using Zenvoyce.Infrastructure.Services;
+using Zenvoyce.Infrastructure.Services.Ai;
 
 namespace Zenvoyce.Infrastructure;
 
@@ -65,6 +66,14 @@ public static class DependencyInjection
         services.AddScoped<IInvoiceEmailService, SmtpInvoiceEmailService>();
         services.AddHttpClient<IVertexAiService, VertexAiService>();
         services.AddSingleton<IXmlInvoiceSigner, XmlInvoiceSigner>();
+
+        // AI Chat Service — Memory + Function Calling
+        services.AddHttpClient<IVertexAiChatService, VertexAiChatService>(client =>
+        {
+            client.Timeout = TimeSpan.FromMinutes(5); // Timeout dài cho stream + agentic loop
+        });
+        services.AddScoped<ToolExecutor>();
+        services.AddSingleton<ChatSessionStore>();
 
         return services;
     }
