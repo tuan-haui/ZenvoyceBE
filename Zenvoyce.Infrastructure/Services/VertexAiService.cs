@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Google.Apis.Auth.OAuth2;
@@ -58,6 +59,88 @@ public sealed class VertexAiService(
 
         using var document = JsonDocument.Parse(rawResponse);
         return MapResponse(document.RootElement);
+    }
+
+    /// <summary>
+    /// Stream response từ Vertex AI - trả về từng chunk text ngay khi có.
+    /// </summary>
+    public async IAsyncEnumerable<string> ChatStreamAsync(
+        string message,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // [QUY TẮC 1] Thêm ?alt=sse để nhận SSE thay vì JSON array
+        var endpoint =
+            $"https://aiplatform.googleapis.com/v1/projects/{_options.ProjectId}" +
+            $"/locations/global/publishers/google/models/{_options.Model}" +
+            $":streamGenerateContent?alt=sse";
+
+        var payload = new
+        {
+            contents = new[]
+            {
+                new
+                {
+                    role = "user",
+                    parts = new[] { new { text = message } }
+                }
+            }
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
+        {
+            Content = new StringContent(
+                JsonSerializer.Serialize(payload, JsonOptions),
+                Encoding.UTF8,
+                "application/json")
+        };
+        request.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", await GetAccessTokenAsync());
+
+        // [QUY TẮC 2] ResponseHeadersRead - nhận response ngay khi có headers, không chờ body
+        using var response = await httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new InvalidOperationException(
+                $"Vertex AI request failed with status {(int)response.StatusCode}: {error}");
+        }
+
+        // [QUY TẮC 3] Đọc stream trực tiếp, không ReadAsStringAsync
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var reader = new StreamReader(stream);
+
+        while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
+        {
+            var line = await reader.ReadLineAsync(cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            // [QUY TẮC 4] Strip prefix SSE
+            if (!line.StartsWith("data: ")) continue;
+
+            var json = line["data: ".Length..];
+
+            if (json == "[DONE]") break;
+
+            string? text = null;
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+                text = ExtractTextFromChunk(doc.RootElement);
+            }
+            catch (JsonException)
+            {
+                continue; // Bỏ qua chunk không parse được
+            }
+
+            // [QUY TẮC 5] yield return ngay, không buffer
+            if (!string.IsNullOrEmpty(text))
+                yield return text;
+        }
     }
 
     private static async Task<string> GetAccessTokenAsync()
@@ -216,5 +299,33 @@ public sealed class VertexAiService(
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Trích xuất text từ chunk SSE trong quá trình streaming.
+    /// </summary>
+    private static string? ExtractTextFromChunk(JsonElement chunk)
+    {
+        if (!chunk.TryGetProperty("candidates", out var candidates)
+            || candidates.ValueKind != JsonValueKind.Array)
+            return null;
+
+        var sb = new StringBuilder();
+
+        foreach (var candidate in candidates.EnumerateArray())
+        {
+            if (!candidate.TryGetProperty("content", out var content)
+                || !content.TryGetProperty("parts", out var parts)
+                || parts.ValueKind != JsonValueKind.Array)
+                continue;
+
+            foreach (var part in parts.EnumerateArray())
+            {
+                if (part.TryGetProperty("text", out var textEl))
+                    sb.Append(textEl.GetString());
+            }
+        }
+
+        return sb.Length > 0 ? sb.ToString() : null;
     }
 }

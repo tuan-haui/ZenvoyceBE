@@ -6,7 +6,7 @@ using Zenvoyce.Application.Common.Models;
 
 namespace Zenvoyce.API.Middlewares;
 
-public class ExceptionHandlingMiddleware(RequestDelegate next)
+public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -22,6 +22,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Unhandled exception occurred");
             await HandleExceptionAsync(context, ex);
         }
     }
@@ -34,6 +35,8 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)
             UnauthorizedAccessException => HttpStatusCode.Unauthorized,
             KeyNotFoundException => HttpStatusCode.NotFound,
             InvalidOperationException => HttpStatusCode.BadRequest,
+            ArgumentException or ArgumentNullException => HttpStatusCode.BadRequest,
+            TimeoutException => HttpStatusCode.RequestTimeout,
             _ => HttpStatusCode.InternalServerError
         };
 
@@ -47,7 +50,12 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)
                 vex.Errors
                     .GroupBy(e => e.PropertyName)
                     .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray())),
-            _ => ApiResponses.Fail(exception.Message)
+            KeyNotFoundException => ApiResponses.Fail(exception.Message),
+            InvalidOperationException => ApiResponses.Fail(exception.Message),
+            UnauthorizedAccessException => ApiResponses.Fail("Không có quyền truy cập."),
+            ArgumentException or ArgumentNullException => ApiResponses.Fail(exception.Message),
+            TimeoutException => ApiResponses.Fail("Yêu cầu hết thời gian chờ. Vui lòng thử lại."),
+            _ => ApiResponses.Fail("Đã xảy ra lỗi trong quá trình xử lý. Vui lòng thử lại sau.")
         };
 
         var response = JsonSerializer.Serialize(envelope, JsonOptions);
