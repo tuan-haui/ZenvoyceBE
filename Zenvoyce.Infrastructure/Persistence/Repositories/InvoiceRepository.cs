@@ -394,4 +394,97 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
                              x.Ngaylap < endOfDay, 
                         cancellationToken);
     }
+
+    public async Task<IReadOnlyCollection<InvoiceListItemDto>> LookupInvoicesAsync(string? soHoadon, string? maSoThue, CancellationToken cancellationToken)
+    {
+        var query = dbContext.Tthoadons
+            .AsNoTracking()
+            .Where(x => x.IsDeleted != true);
+
+        if (!string.IsNullOrWhiteSpace(soHoadon))
+        {
+            query = query.Where(x => x.Sohoadon == soHoadon.Trim());
+        }
+
+        if (!string.IsNullOrWhiteSpace(maSoThue))
+        {
+            query = query.Where(x => x.Khachhang != null && x.Khachhang.Masothue == maSoThue.Trim());
+        }
+
+        return await query
+            .OrderByDescending(x => x.Ngaylap)
+            .Select(x => new InvoiceListItemDto
+            {
+                Id = x.Id,
+                DonviId = x.Donviid ?? Guid.Empty,
+                KhachhangId = x.Khachhangid ?? Guid.Empty,
+                MauctyId = x.Mauctyid ?? Guid.Empty,
+                Kyhieu = x.Kyhieu,
+                Sohoadon = x.Sohoadon,
+                Ngaylap = x.Ngaylap ?? DateTime.MinValue,
+                Tongtien = x.Tongtien ?? 0m,
+                Tienthue = x.Tienthue ?? 0m,
+                Tongthanhtoan = x.Tongthanhtoan ?? 0m,
+                Trangthai = x.Trangthai ?? string.Empty,
+                TenKhachhang = x.Khachhang != null ? x.Khachhang.Tenkhachhang : string.Empty,
+                MaSoThueKhachhang = x.Khachhang != null ? x.Khachhang.Masothue : null,
+                EmailKhachhang = x.Khachhang != null ? x.Khachhang.Email : null,
+                TenDonvi = x.Donvi != null ? x.Donvi.Tendonvi : string.Empty,
+                TenMau = x.Maucty != null && x.Maucty.Maugoc != null ? x.Maucty.Maugoc.Tenmau : null
+            })
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Hoadon>> FindInvoicesForSignedXmlAsync(
+        Guid? id,
+        string? soHoadon,
+        string? kyHieu,
+        string? maSoThue,
+        DateTime? ngayLap,
+        CancellationToken cancellationToken)
+    {
+        var query = dbContext.Tthoadons
+            .AsNoTracking()
+            .Where(x => x.IsDeleted != true);
+
+        if (id.HasValue)
+        {
+            query = query.Where(x => x.Id == id.Value);
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(soHoadon))
+            {
+                return Array.Empty<Hoadon>();
+            }
+
+            var so = soHoadon.Trim();
+            query = query.Where(x => x.Sohoadon == so);
+
+            if (!string.IsNullOrWhiteSpace(kyHieu))
+            {
+                var kh = kyHieu.Trim();
+                query = query.Where(x => x.Kyhieu == kh);
+            }
+
+            if (!string.IsNullOrWhiteSpace(maSoThue))
+            {
+                var mst = maSoThue.Trim();
+                query = query.Where(x => x.Khachhang != null && x.Khachhang.Masothue == mst);
+            }
+
+            if (ngayLap.HasValue)
+            {
+                var start = ngayLap.Value.Date;
+                var end = start.AddDays(1);
+                query = query.Where(x => x.Ngaylap >= start && x.Ngaylap < end);
+            }
+        }
+
+        var entities = await query
+            .OrderByDescending(x => x.Ngaylap)
+            .ToListAsync(cancellationToken);
+
+        return entities.Select(MapInvoice).ToList();
+    }
 }

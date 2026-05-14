@@ -14,6 +14,7 @@ using Zenvoyce.Application.Features.Invoices.DTOs;
 using Zenvoyce.Application.Features.Invoices.Queries.GetInvoiceHistory;
 using Zenvoyce.Application.Features.Invoices.Queries.GetInvoices;
 using Zenvoyce.Application.Features.Invoices.Queries.GetSalesReport;
+using Zenvoyce.Application.Features.Invoices.Queries.GetSignedInvoiceXml;
 using Zenvoyce.Application.Features.Invoices.Queries.PreviewInvoicePdf;
 
 namespace Zenvoyce.API.Controllers;
@@ -83,6 +84,7 @@ public class InvoicesController(ISender mediator) : ControllerBase
         return Ok(ApiResponse<StringMessageDto>.Ok(new StringMessageDto("Hóa đơn đã được hủy.")));
     }
 
+    [AllowAnonymous]
     [HttpPost("verify-signature-xml")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<ApiResponse<VerifyInvoiceXmlSignatureResultDto>>> VerifyInvoiceXmlSignature(
@@ -124,6 +126,7 @@ public class InvoicesController(ISender mediator) : ControllerBase
         return Ok(ApiResponse<IReadOnlyCollection<InvoiceHistoryItemDto>>.Ok(result));
     }
 
+    [AllowAnonymous]
     [HttpGet("{id:guid}/preview-pdf")]
     [Produces("application/pdf")]
     public async Task<IActionResult> PreviewPdf(Guid id, CancellationToken cancellationToken)
@@ -133,6 +136,7 @@ public class InvoicesController(ISender mediator) : ControllerBase
         return File(result.PdfBytes, result.ContentType);
     }
 
+    [AllowAnonymous]
     [HttpPost("preview-pdf-from-data")]
     [Produces("application/pdf")]
     public async Task<IActionResult> PreviewPdfFromData([FromBody] Zenvoyce.Application.Features.Invoices.Queries.PreviewInvoicePdfFromData.PreviewInvoicePdfFromDataQuery query, CancellationToken cancellationToken)
@@ -140,6 +144,36 @@ public class InvoicesController(ISender mediator) : ControllerBase
         var result = await mediator.Send(query, cancellationToken);
         Response.Headers.ContentDisposition = $"inline; filename=\"{result.Filename}\"";
         return File(result.PdfBytes, result.ContentType);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("lookup")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<InvoiceListItemDto>>>> LookupInvoices(
+        [FromQuery] string? soHoadon,
+        [FromQuery] string? maSoThue)
+    {
+        var result = await mediator.Send(new Zenvoyce.Application.Features.Invoices.Queries.LookupInvoice.LookupInvoiceQuery(soHoadon, maSoThue));
+        return Ok(ApiResponse<IReadOnlyCollection<InvoiceListItemDto>>.Ok(result));
+    }
+
+    /// <summary>Tải file XML hoá đơn đã ký số theo id hoặc số hoá đơn kèm các trường lọc (ký hiệu, MST khách, ngày lập).</summary>
+    [AllowAnonymous]
+    [HttpGet("signed-xml")]
+    [Produces("application/xml")]
+    public async Task<IActionResult> GetSignedInvoiceXml(
+        [FromQuery] Guid? id,
+        [FromQuery] string? soHoadon,
+        [FromQuery] string? kyHieu,
+        [FromQuery] string? maSoThue,
+        [FromQuery] DateTime? ngayLap,
+        CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(
+            new GetSignedInvoiceXmlQuery(id, soHoadon, kyHieu, maSoThue, ngayLap),
+            cancellationToken);
+        var bytes = Encoding.UTF8.GetBytes(result.XmlContent);
+        Response.Headers.ContentDisposition = $"attachment; filename=\"{result.Filename}\"";
+        return File(bytes, "application/xml", result.Filename);
     }
 }
 

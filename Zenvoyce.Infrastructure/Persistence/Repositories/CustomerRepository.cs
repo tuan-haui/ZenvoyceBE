@@ -11,7 +11,7 @@ public class CustomerRepository(ZenvoyceDbContext dbContext) : ICustomerReposito
     {
         var query = dbContext.Ttkhachhangs
             .AsNoTracking()
-            .Where(x => x.Donviid == donviId);
+            .Where(x => x.Donviid == donviId && x.IsDeleted == false);
 
         if (!string.IsNullOrWhiteSpace(keyword))
         {

@@ -20,4 +20,14 @@ public interface IInvoiceRepository
 
     Task<IReadOnlyCollection<HoadonHanghoa>> GetInvoiceLinesAsync(Guid invoiceId, CancellationToken cancellationToken);
     Task<int> GetInvoiceCountByDateAsync(Guid donviId, DateTime date, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<InvoiceListItemDto>> LookupInvoicesAsync(string? soHoadon, string? maSoThue, CancellationToken cancellationToken);
+
+    /// <summary>Tìm hoá đơn theo id hoặc tổ hợp trường (số hoá đơn, ký hiệu, MST khách, ngày lập) để tải XML đã ký.</summary>
+    Task<IReadOnlyList<Hoadon>> FindInvoicesForSignedXmlAsync(
+        Guid? id,
+        string? soHoadon,
+        string? kyHieu,
+        string? maSoThue,
+        DateTime? ngayLap,
+        CancellationToken cancellationToken);
 }

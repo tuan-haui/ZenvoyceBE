@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
@@ -8,7 +8,6 @@ using Zenvoyce.Application.Common.Models;
 using Zenvoyce.Infrastructure;
 using Zenvoyce.Infrastructure.Security;
 using Zenvoyce.Infrastructure.Services;
-using Zenvoyce.API.Middlewares;
 using Zenvoyce.API.Swagger;
 using ZenvoyceDbContext = Zenvoyce.Infrastructure.Entities.ZenvoyceDbContext;
 
@@ -152,7 +151,6 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors("FrontendPolicy");
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
