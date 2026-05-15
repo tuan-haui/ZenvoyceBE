@@ -9,6 +9,7 @@ using Zenvoyce.Infrastructure;
 using Zenvoyce.Infrastructure.Security;
 using Zenvoyce.Infrastructure.Services;
 using Zenvoyce.API.Swagger;
+using Zenvoyce.API.Middlewares;
 using ZenvoyceDbContext = Zenvoyce.Infrastructure.Entities.ZenvoyceDbContext;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -151,6 +152,7 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors("FrontendPolicy");
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
