@@ -6,6 +6,7 @@ using Zenvoyce.Application.Common.Audit;
 using Zenvoyce.Application.Features.Auth.DTOs;
 using Zenvoyce.Application.Features.Users.DTOs;
 using Zenvoyce.Domain.Interfaces;
+using Zenvoyce.Domain.Models;
 
 namespace Zenvoyce.Application.Features.Auth.Commands.Login;
 
@@ -22,7 +23,6 @@ public class LoginCommandValidator : AbstractValidator<LoginCommand>
 
 public class LoginCommandHandler(
     IUserRepository userRepository,
-    IUserPermissionRepository userPermissionRepository,
     IPasswordHasher passwordHasher,
     IJwtTokenService jwtTokenService,
     IDateTimeProvider dateTimeProvider,
@@ -44,8 +44,16 @@ public class LoginCommandHandler(
 
         var now = dateTimeProvider.UtcNow;
         var expiredAt = now.AddMinutes(120);
-        var roleId = await userPermissionRepository.GetRoleIdByUserIdAsync(user.Id, cancellationToken);
-        var token = jwtTokenService.GenerateToken(user.Id, roleId, expiredAt);
+        var token = jwtTokenService.GenerateToken(
+            new JwtUserClaims(
+                user.Id,
+                user.Quyenid,
+                user.Tenquyen,
+                user.Madonvi,
+                user.Tendangnhap,
+                user.Hoten,
+                user.Email),
+            expiredAt);
 
         var loginDetail = CommandAuditDetailFormatter.Format(request);
         await auditLogRepository.AddSystemActivityAsync(user.Id, "Đăng nhập", cancellationToken, loginDetail);

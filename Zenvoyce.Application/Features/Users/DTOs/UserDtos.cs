@@ -18,8 +18,10 @@ public class UserDto
 public class LoginUserInfoDto
 {
     public Guid Id { get; set; }
+    public Guid? Madonvi { get; set; }
     public string Tendangnhap { get; set; } = string.Empty;
     public string? Hoten { get; set; }
+    public string? Email { get; set; }
     public short Trangthai { get; set; }
     public Guid? Quyenid { get; set; }
     public string? Tenquyen { get; set; }

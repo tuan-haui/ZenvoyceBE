@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Google.Apis.Auth.OAuth2;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Zenvoyce.Application.Abstractions.Services;
 using Zenvoyce.Application.Features.Ai.DTOs;
@@ -18,9 +19,10 @@ namespace Zenvoyce.Infrastructure.Services.Ai;
 /// </summary>
 public sealed class VertexAiChatService : IVertexAiChatService
 {
-    private readonly HttpClient      _httpClient;
-    private readonly VertexAiOptions _options;
-    private readonly ToolExecutor    _toolExecutor;
+    private readonly HttpClient            _httpClient;
+    private readonly VertexAiOptions       _options;
+    private readonly ToolExecutor          _toolExecutor;
+    private readonly ILogger<VertexAiChatService> _logger;
 
     // Token cache (token hết hạn sau ~1 giờ, refresh trước 5 phút)
     private string?  _cachedToken;
@@ -38,18 +40,21 @@ public sealed class VertexAiChatService : IVertexAiChatService
     private const string SystemInstruction =
         "Bạn là trợ lý AI của hệ thống Zenvoyce — phần mềm quản lý hóa đơn điện tử. " +
         "Bạn có thể truy vấn dữ liệu hóa đơn trực tiếp từ database để trả lời các câu hỏi về: " +
-        "thống kê doanh thu, danh sách hóa đơn theo khách hàng, hóa đơn theo trạng thái, và chi tiết hóa đơn cụ thể. " +
+        "thống kê doanh thu, danh sách hóa đơn theo khách hàng, hóa đơn theo trạng thái, chi tiết hóa đơn cụ thể, " +
+        "và đánh giá rủi ro hóa đơn (dùng get_invoices_for_risk_assessment với limit phù hợp). " +
         "Hãy trả lời bằng tiếng Việt, ngắn gọn và chuyên nghiệp. " +
         "Khi cần số liệu từ database, hãy gọi tool phù hợp thay vì tự đoán.";
 
     public VertexAiChatService(
-        HttpClient              httpClient,
-        IOptions<VertexAiOptions> options,
-        ToolExecutor            toolExecutor)
+        HttpClient                        httpClient,
+        IOptions<VertexAiOptions>         options,
+        ToolExecutor                      toolExecutor,
+        ILogger<VertexAiChatService>      logger)
     {
         _httpClient   = httpClient;
         _options      = options.Value;
         _toolExecutor = toolExecutor;
+        _logger       = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     // ─── Public: Stream với memory + function calling ─────────────────────────
@@ -105,11 +110,26 @@ public sealed class VertexAiChatService : IVertexAiChatService
                 // Thông báo ngắn cho user biết đang xử lý
                 yield return $"\n⚙️ *Đang truy vấn: {toolName}...*\n";
 
+                _logger.LogInformation("[VertexAiChatService] Calling tool: {ToolName}", toolName);
+
                 // Lưu functionCall vào history (role: model — TRƯỚC khi execute)
                 session.AddFunctionCall(toolName, toolArgs.Clone());
 
                 // Thực thi tool
                 var result = await _toolExecutor.ExecuteAsync(toolName, toolArgs);
+
+                // Kiểm tra nếu tool trả về error (serialize to JSON để check)
+                var resultJson = System.Text.Json.JsonSerializer.Serialize(result, JsonOptions);
+                using var resultDoc = JsonDocument.Parse(resultJson);
+                if (resultDoc.RootElement.TryGetProperty("error", out var errorProp))
+                {
+                    var errorMsg = errorProp.GetString() ?? "Lỗi không xác định";
+                    _logger.LogError("[VertexAiChatService] Tool {ToolName} failed: {Error}", toolName, errorMsg);
+                }
+                else
+                {
+                    _logger.LogInformation("[VertexAiChatService] Tool {ToolName} succeeded", toolName);
+                }
 
                 // Lưu kết quả vào history (role: tool — SAU khi execute)
                 session.AddFunctionResponse(toolName, result);
