@@ -38,10 +38,10 @@ public class UpdateBaseTemplateCommandHandler(
         var template = await templateRepository.GetBaseTemplateByIdAsync(request.Id, cancellationToken)
             ?? throw new KeyNotFoundException("Không tìm thấy mẫu hóa đơn gốc.");
 
-        if (await templateRepository.IsBaseTemplateInUseAsync(request.Id, cancellationToken))
-        {
-            throw new InvalidOperationException("Không thể chỉnh sửa mẫu đã được đưa vào sử dụng.");
-        }
+        // if (await templateRepository.IsBaseTemplateInUseAsync(request.Id, cancellationToken))
+        // {
+        //     throw new InvalidOperationException("Không thể chỉnh sửa mẫu đã được đưa vào sử dụng.");
+        // }
 
         var code = request.Kyhieu.Trim();
         if (await templateRepository.BaseTemplateCodeExistsAsync(code, request.Id, cancellationToken))
