@@ -64,6 +64,7 @@ public static class DependencyInjection
         services.AddSingleton<ITemplateRenderer, HandlebarsTemplateRenderer>();
         services.AddSingleton<IInvoicePdfRenderer, PuppeteerPdfRenderer>();
         services.AddScoped<IInvoiceEmailService, SmtpInvoiceEmailService>();
+        services.AddScoped<IInvoiceExportService, InvoiceExportService>();
         services.AddHttpClient<IVertexAiService, VertexAiService>();
         services.AddSingleton<IXmlInvoiceSigner, XmlInvoiceSigner>();
 

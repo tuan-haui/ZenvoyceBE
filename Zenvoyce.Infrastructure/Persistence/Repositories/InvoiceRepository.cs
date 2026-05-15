@@ -395,6 +395,104 @@ public class InvoiceRepository(ZenvoyceDbContext dbContext) : IInvoiceRepository
                         cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<InvoiceForExportDto>> GetInvoicesWithLineItemsAsync(
+        Guid? khachhangId,
+        string? trangthai,
+        DateTime? fromDate,
+        DateTime? toDate,
+        CancellationToken cancellationToken)
+    {
+        var query = dbContext.Tthoadons
+            .AsNoTracking()
+            .Where(x => x.IsDeleted != true);
+
+        if (khachhangId.HasValue)
+        {
+            query = query.Where(x => x.Khachhangid == khachhangId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(trangthai))
+        {
+            var normalized = trangthai.Trim().ToLower();
+            query = query.Where(x => x.Trangthai != null && x.Trangthai.ToLower() == normalized);
+        }
+
+        if (fromDate.HasValue)
+        {
+            query = query.Where(x => x.Ngaylap.HasValue && x.Ngaylap.Value >= fromDate.Value);
+        }
+
+        if (toDate.HasValue)
+        {
+            query = query.Where(x => x.Ngaylap.HasValue && x.Ngaylap.Value <= toDate.Value);
+        }
+
+        var invoices = await query
+            .OrderByDescending(x => x.Ngaylap)
+            .Select(x => new
+            {
+                Invoice = new InvoiceForExportDto
+                {
+                    Id = x.Id,
+                    DonviId = x.Donviid ?? Guid.Empty,
+                    KhachhangId = x.Khachhangid ?? Guid.Empty,
+                    MauctyId = x.Mauctyid ?? Guid.Empty,
+                    Kyhieu = x.Kyhieu,
+                    Sohoadon = x.Sohoadon,
+                    Ngaylap = x.Ngaylap ?? DateTime.MinValue,
+                    Tongtien = x.Tongtien ?? 0m,
+                    Tienthue = x.Tienthue ?? 0m,
+                    Tongthanhtoan = x.Tongthanhtoan ?? 0m,
+                    Trangthai = x.Trangthai ?? string.Empty,
+                    TenKhachhang = x.Khachhang != null ? x.Khachhang.Tenkhachhang : string.Empty,
+                    MaSoThueKhachhang = x.Khachhang != null ? x.Khachhang.Masothue : null,
+                    EmailKhachhang = x.Khachhang != null ? x.Khachhang.Email : null,
+                    TenDonvi = x.Donvi != null ? x.Donvi.Tendonvi : string.Empty,
+                    TenMau = x.Maucty != null && x.Maucty.Maugoc != null ? x.Maucty.Maugoc.Tenmau : null
+                },
+                InvoiceId = x.Id
+            })
+            .ToListAsync(cancellationToken);
+
+        // Fetch line items for all invoices
+        var invoiceIds = invoices.Select(x => x.InvoiceId).ToArray();
+        var lineItems = await dbContext.Hoadonchitiets
+            .AsNoTracking()
+            .Where(x => invoiceIds.Contains(x.Hoadonid ?? Guid.Empty))
+            .Select(x => new
+            {
+                HoadonId = x.Hoadonid ?? Guid.Empty,
+                Line = new InvoiceLineForExportDto
+                {
+                    HanghoaId = x.Hanghoaid ?? Guid.Empty,
+                    TenHanghoa = x.Hanghoa != null ? x.Hanghoa.Tenhanghoa : string.Empty,
+                    Soluong = x.Soluong ?? 0m,
+                    Dongia = x.Dongia ?? 0m,
+                    Thuesuat = x.Thuesuat ?? 0m,
+                    Thanhtien = x.Thanhtien ?? 0m
+                }
+            })
+            .ToListAsync(cancellationToken);
+
+        var lineItemsByInvoice = lineItems
+            .GroupBy(x => x.HoadonId)
+            .ToDictionary(g => g.Key, g => (IReadOnlyCollection<InvoiceLineForExportDto>)g.Select(x => x.Line).ToArray());
+
+        // Combine invoices with their line items
+        var result = invoices
+            .Select(x =>
+            {
+                if (lineItemsByInvoice.TryGetValue(x.InvoiceId, out var items))
+                {
+                    x.Invoice.LineItems = items;
+                }
+                return x.Invoice;
+            })
+            .ToArray();
+
+        return result;
+    }
+
     public async Task<IReadOnlyCollection<InvoiceListItemDto>> LookupInvoicesAsync(string? soHoadon, string? maSoThue, CancellationToken cancellationToken)
     {
         var query = dbContext.Tthoadons

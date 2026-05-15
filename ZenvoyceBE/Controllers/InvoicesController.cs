@@ -16,6 +16,8 @@ using Zenvoyce.Application.Features.Invoices.Queries.GetInvoices;
 using Zenvoyce.Application.Features.Invoices.Queries.GetSalesReport;
 using Zenvoyce.Application.Features.Invoices.Queries.GetSignedInvoiceXml;
 using Zenvoyce.Application.Features.Invoices.Queries.PreviewInvoicePdf;
+using Zenvoyce.Application.Features.Invoices.Queries.ExportInvoices;
+using Zenvoyce.Application.Features.Invoices.Queries.ExportSalesReport;
 
 namespace Zenvoyce.API.Controllers;
 
@@ -54,6 +56,20 @@ public class InvoicesController(ISender mediator) : ControllerBase
     {
         var result = await mediator.Send(new GetSalesReportQuery(donviId, khachhangId, tuNgay, denNgay));
         return Ok(ApiResponse<IReadOnlyCollection<SalesReportRow>>.Ok(result));
+    }
+
+    [HttpGet("reports/sales/export/excel")]
+    [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+    public async Task<IActionResult> ExportSalesReport(
+        [FromQuery] Guid? donviId,
+        [FromQuery] Guid? khachhangId,
+        [FromQuery] DateTime? tuNgay,
+        [FromQuery] DateTime? denNgay,
+        CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(new ExportSalesReportQuery(donviId, khachhangId, tuNgay, denNgay), cancellationToken);
+        Response.Headers.ContentDisposition = $"attachment; filename=\"{result.Filename}\"";
+        return File(result.ExcelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", result.Filename);
     }
 
     [HttpPost("{id:guid}/forward")]
@@ -117,6 +133,20 @@ public class InvoicesController(ISender mediator) : ControllerBase
     {
         var result = await mediator.Send(new GetInvoicesQuery(khachhangId, trangthai, tuNgay, denNgay));
         return Ok(ApiResponse<IReadOnlyCollection<InvoiceListItemDto>>.Ok(result));
+    }
+
+    [HttpGet("export/excel")]
+    [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+    public async Task<IActionResult> ExportInvoices(
+        [FromQuery] Guid? khachhangId,
+        [FromQuery] string? trangthai,
+        [FromQuery] DateTime? tuNgay,
+        [FromQuery] DateTime? denNgay,
+        CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(new ExportInvoicesQuery(khachhangId, trangthai, tuNgay, denNgay), cancellationToken);
+        Response.Headers.ContentDisposition = $"attachment; filename=\"{result.Filename}\"";
+        return File(result.ExcelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", result.Filename);
     }
 
     [HttpGet("{id:guid}/history")]
