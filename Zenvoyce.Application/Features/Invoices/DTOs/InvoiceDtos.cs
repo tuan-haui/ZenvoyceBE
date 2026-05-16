@@ -23,6 +23,7 @@ public class InvoiceListItemDto
     public Guid DonviId { get; set; }
     public Guid KhachhangId { get; set; }
     public Guid MauctyId { get; set; }
+    public Guid? ThamChieuHoadonId { get; set; }
     public string? Kyhieu { get; set; }
     public string? Sohoadon { get; set; }
     public DateTime Ngaylap { get; set; }

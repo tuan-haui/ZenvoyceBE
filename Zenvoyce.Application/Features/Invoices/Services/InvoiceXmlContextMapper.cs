@@ -79,9 +79,150 @@ public static class InvoiceXmlContextMapper
             ["tax_total"] = FormatMoney(root.Element("TienThue")?.Value),
             ["vat_amount"] = FormatMoney(root.Element("TienThue")?.Value),
             ["vat_rate"] = FormatNumber(root.Element("ThueSuat")?.Value),
-            ["amount_in_words"] = root.Element("SoTienBangChu")?.Value
+            ["amount_in_words"] = GetAmountInWords(root)
         };
     }
+
+    private static string GetAmountInWords(XElement root)
+    {
+        var amountInWords = root.Element("SoTienBangChu")?.Value;
+        if (!string.IsNullOrWhiteSpace(amountInWords))
+        {
+            return amountInWords;
+        }
+
+        var totalAmount = root.Element("TongThanhToan")?.Value;
+        if (string.IsNullOrWhiteSpace(totalAmount))
+        {
+            return string.Empty;
+        }
+
+        if (!decimal.TryParse(totalAmount, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+        {
+            return string.Empty;
+        }
+
+        return ConvertMoneyToVietnameseWords(amount);
+    }
+
+    private static string ConvertMoneyToVietnameseWords(decimal amount)
+    {
+        var rounded = decimal.Round(amount, 0, MidpointRounding.AwayFromZero);
+        if (rounded == 0)
+        {
+            return "Không đồng";
+        }
+
+        var text = ConvertIntegerToVietnameseWords((long)Math.Abs(rounded));
+        if (rounded < 0)
+        {
+            text = "âm " + text;
+        }
+
+        return char.ToUpper(text[0], CultureInfo.GetCultureInfo("vi-VN")) + text[1..] + " đồng";
+    }
+
+    private static string ConvertIntegerToVietnameseWords(long number)
+    {
+        if (number == 0)
+        {
+            return "không";
+        }
+
+        var scaleNames = new[]
+        {
+            string.Empty,
+            "nghìn",
+            "triệu",
+            "tỷ",
+            "nghìn tỷ",
+            "triệu tỷ",
+            "tỷ tỷ"
+        };
+
+        var parts = new List<string>();
+        var scaleIndex = 0;
+
+        while (number > 0)
+        {
+            var group = (int)(number % 1000);
+            if (group > 0)
+            {
+                var isHighestGroup = (number / 1000 == 0); // không còn nhóm nào cao hơn
+                var groupText = ConvertThreeDigitGroup(group, scaleIndex > 0 && !isHighestGroup);
+                //                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                var scaleText = scaleNames[scaleIndex];
+                parts.Insert(0, string.IsNullOrWhiteSpace(scaleText) ? groupText : $"{groupText} {scaleText}");
+            }
+
+            number /= 1000;
+            scaleIndex++;
+        }
+
+        return string.Join(" ", parts);
+    }
+
+    private static string ConvertThreeDigitGroup(int number, bool forceLeadingHundreds)
+    {
+        var hundreds = number / 100;
+        var tens = (number % 100) / 10;
+        var ones = number % 10;
+
+        var parts = new List<string>();
+
+        if (hundreds > 0)
+        {
+            parts.Add(UnitWord(hundreds));
+            parts.Add("trăm");
+        }
+        else if (forceLeadingHundreds && (tens > 0 || ones > 0))
+        {
+            parts.Add("không trăm");
+        }
+
+        if (tens > 1)
+        {
+            parts.Add(UnitWord(tens));
+            parts.Add("mươi");
+        }
+        else if (tens == 1)
+        {
+            parts.Add("mười");
+        }
+        else if ((hundreds > 0 || forceLeadingHundreds) && ones > 0)
+        {
+            parts.Add("lẻ");
+        }
+
+        if (ones > 0)
+        {
+            parts.Add(GetOnesWord(ones, tens));
+        }
+
+        return string.Join(" ", parts);
+    }
+
+    private static string UnitWord(int digit) => digit switch
+    {
+        1 => "một",
+        2 => "hai",
+        3 => "ba",
+        4 => "bốn",
+        5 => "năm",
+        6 => "sáu",
+        7 => "bảy",
+        8 => "tám",
+        9 => "chín",
+        _ => string.Empty
+    };
+
+    private static string GetOnesWord(int ones, int tens) => ones switch
+    {
+        1 when tens > 1 => "mốt",
+        4 when tens > 0 => "tư",
+        5 when tens > 0 => "lăm",
+        _ => UnitWord(ones)
+    };
 
     private static DateTime? ParseDate(string? value)
     {

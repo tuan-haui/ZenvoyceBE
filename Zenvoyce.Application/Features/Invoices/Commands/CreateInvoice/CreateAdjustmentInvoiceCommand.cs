@@ -8,49 +8,73 @@ using Zenvoyce.Domain.Interfaces;
 
 namespace Zenvoyce.Application.Features.Invoices.Commands.CreateInvoice;
 
-public record CreateInvoiceCommand(
+public record CreateAdjustmentInvoiceCommand(
     Guid DonviId,
     Guid KhachhangId,
     Guid MauctyId,
     DateTime Ngaylap,
-    IReadOnlyCollection<InvoiceLineRequestDto> Hanghoas) : IRequest<CreateInvoiceResultDto>;
+    IReadOnlyCollection<InvoiceLineRequestDto> Hanghoas,
+    Guid? ThamChieuHoadonId = null) : IRequest<CreateInvoiceResultDto>;
 
-public class CreateInvoiceCommandValidator : AbstractValidator<CreateInvoiceCommand>
+public class CreateAdjustmentInvoiceCommandValidator : AbstractValidator<CreateAdjustmentInvoiceCommand>
 {
-    public CreateInvoiceCommandValidator()
+    public CreateAdjustmentInvoiceCommandValidator()
     {
         RuleFor(x => x.DonviId).NotEmpty();
         RuleFor(x => x.KhachhangId).NotEmpty();
         RuleFor(x => x.MauctyId).NotEmpty();
+        RuleFor(x => x.Ngaylap).NotEmpty();
         RuleFor(x => x.Hanghoas).NotEmpty();
+        RuleFor(x => x.ThamChieuHoadonId).NotNull();
         RuleForEach(x => x.Hanghoas).SetValidator(new InvoiceLineRequestValidator());
     }
 }
 
-public class InvoiceLineRequestValidator : AbstractValidator<InvoiceLineRequestDto>
-{
-    public InvoiceLineRequestValidator()
-    {
-        RuleFor(x => x.HanghoaId).NotEmpty();
-        RuleFor(x => x.Soluong).GreaterThan(0);
-        RuleFor(x => x.Dongia).GreaterThan(0);
-        RuleFor(x => x.ThueSuat).InclusiveBetween(0, 100);
-    }
-}
-
-public class CreateInvoiceCommandHandler(
+public class CreateAdjustmentInvoiceCommandHandler(
     IInvoiceRepository invoiceRepository,
     ICustomerRepository customerRepository,
     IProductRepository productRepository,
     ICompanyRepository companyRepository,
     IDateTimeProvider dateTimeProvider,
     ICurrentUserService currentUserService)
-    : IRequestHandler<CreateInvoiceCommand, CreateInvoiceResultDto>
+    : IRequestHandler<CreateAdjustmentInvoiceCommand, CreateInvoiceResultDto>
 {
     private const string DraftStatus = "Draft";
 
-    public async Task<CreateInvoiceResultDto> Handle(CreateInvoiceCommand request, CancellationToken cancellationToken)
+    public async Task<CreateInvoiceResultDto> Handle(CreateAdjustmentInvoiceCommand request, CancellationToken cancellationToken)
     {
+        if (!request.ThamChieuHoadonId.HasValue)
+        {
+            throw new InvalidOperationException("Thiếu hóa đơn gốc để lập điều chỉnh.");
+        }
+
+        var sourceInvoice = await invoiceRepository.GetByIdAsync(request.ThamChieuHoadonId.Value, cancellationToken);
+        if (sourceInvoice is null || sourceInvoice.IsDeleted)
+        {
+            throw new InvalidOperationException("Không tìm thấy hóa đơn gốc.");
+        }
+
+        if (sourceInvoice.Donviid != request.DonviId)
+        {
+            throw new InvalidOperationException("Hóa đơn điều chỉnh phải cùng đơn vị với hóa đơn gốc.");
+        }
+
+        if (sourceInvoice.Khachhangid != request.KhachhangId)
+        {
+            throw new InvalidOperationException("Khách hàng của hóa đơn điều chỉnh phải khớp với hóa đơn gốc.");
+        }
+
+        if (sourceInvoice.Mauctyid != request.MauctyId)
+        {
+            throw new InvalidOperationException("Mẫu công ty của hóa đơn điều chỉnh phải khớp với hóa đơn gốc.");
+        }
+
+        var status = sourceInvoice.Trangthai.Trim();
+        if (status is not ("Issued" or "Signed" or "PendingSign" or "Draft"))
+        {
+            throw new InvalidOperationException("Hóa đơn gốc không ở trạng thái cho phép lập điều chỉnh.");
+        }
+
         var customer = await customerRepository.GetByIdAsync(request.KhachhangId, cancellationToken);
         if (customer is null || customer.IsDeleted || customer.Donviid != request.DonviId)
         {
@@ -85,6 +109,7 @@ public class CreateInvoiceCommandHandler(
             Tienthue = tienthue,
             Tongthanhtoan = tongthanhtoan,
             Trangthai = DraftStatus,
+            Thamchieuhoadonid = request.ThamChieuHoadonId,
             Xmldaky = null,
             CreatedAt = now,
             UpdatedAt = now,
@@ -99,7 +124,7 @@ public class CreateInvoiceCommandHandler(
         {
             Id = Guid.NewGuid(),
             Hoadonid = invoiceId,
-            Hanhdong = "Tạo hóa đơn mới",
+            Hanhdong = "Lập hóa đơn điều chỉnh",
             Trangthaicu = null,
             Trangthaimoi = DraftStatus,
             Thoigian = now,

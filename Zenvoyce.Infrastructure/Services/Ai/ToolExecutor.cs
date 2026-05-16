@@ -239,7 +239,7 @@ public sealed class ToolExecutor
                 hh.""thanhtien"" AS line_total,
                 dm.""tenhanghoa"" AS product_name,
                 dm.""donvitinh"" AS unit
-            FROM  ""tthanghoa""        hh
+            FROM  ""hoadonchitiet""        hh
             LEFT JOIN ""danhmuchanghoa"" dm ON dm.""id"" = hh.""hanghoaid""
             WHERE hh.""hoadonid"" = @invoiceId";
 

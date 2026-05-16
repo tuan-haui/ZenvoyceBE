@@ -34,7 +34,7 @@ public class InvoicesController(ISender mediator) : ControllerBase
     }
 
     [HttpPost("{id:guid}/adjust")]
-    public async Task<ActionResult<ApiResponse<CreateInvoiceResultDto>>> CreateAdjustmentInvoice(Guid id, [FromBody] CreateInvoiceCommand command)
+    public async Task<ActionResult<ApiResponse<CreateInvoiceResultDto>>> CreateAdjustmentInvoice(Guid id, [FromBody] CreateAdjustmentInvoiceCommand command)
     {
         var result = await mediator.Send(command with { ThamChieuHoadonId = id });
         return Ok(ApiResponse<CreateInvoiceResultDto>.Ok(result));
@@ -60,6 +60,7 @@ public class InvoicesController(ISender mediator) : ControllerBase
 
     [HttpGet("reports/sales/export/excel")]
     [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+    [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> ExportSalesReport(
         [FromQuery] Guid? donviId,
         [FromQuery] Guid? khachhangId,
